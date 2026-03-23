@@ -1,0 +1,463 @@
+/* ═══════════════════════════════════════════
+   InscriptionArtiste.css
+   ARTIVISION — Page Inscription / Connexion
+═══════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap');
+
+:root {
+  --bordeaux:    #37040E;
+  --left-bg:     #37040E;
+  --left-bg2:    #190101;
+  --gold:        #f7d5b3;
+  --cream:       #e5d9c4;
+  --brown:       #37040E;
+  --brown-light: #7a5030;
+  --field-bg:    #e8d8c4;
+}
+
+/* ════════════════════════════════
+   ROOT
+════════════════════════════════ */
+.av-root {
+  position:    relative;
+  display:     flex;
+  width:       100vw;
+  min-height:  100vh;
+  overflow:    hidden;
+  font-family: 'Raleway', sans-serif;
+  background:  var(--bordeaux);
+}
+
+/* ════════════════════════════════
+   KEYFRAMES
+════════════════════════════════ */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-18px); }
+  to   { opacity: 1; transform: translateY(0);     }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(247,213,179,0.15); }
+  50%       { box-shadow: 0 0 22px 6px rgba(247,213,179,0.35); }
+}
+
+.av-anim-fade-down { animation: fadeDown 0.7s ease both; }
+.av-anim-fade-up   { animation: fadeUp  0.8s ease 0.15s both; }
+
+/* ════════════════════════════════
+   PANNEAU GAUCHE
+════════════════════════════════ */
+.av-left-panel {
+  position:        relative;
+  z-index:         2;
+  width:           30%;
+  min-width:       220px;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     flex-start;
+  padding:         28px 32px;
+  gap:             16px;
+  background:      linear-gradient(160deg, var(--left-bg) 0%, var(--left-bg2) 100%);
+  animation:       glowPulse 4s ease-in-out infinite;
+  overflow:        hidden;
+  opacity:         0;
+  transition:      opacity 0.5s ease;
+}
+.av-left-panel.av-left-ready { opacity: 1; }
+
+.av-particles {
+  position:       absolute;
+  inset:          0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+  z-index:        0;
+}
+
+/* image4 — cadre décoratif filigrane panneau gauche */
+.av-left-deco {
+  position:       absolute;
+  right:          51px;
+  top:            58%;
+  transform:      translateY(-60%);
+  height:         60%;
+  opacity:        0.18;
+  pointer-events: none;
+  z-index:        0;
+  object-fit:     contain;
+}
+
+.av-logo-wrap,
+.av-left-content,
+.av-socials { position: relative; z-index: 1; }
+
+/* ── Logo ── */
+.av-logo-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    flex-start;
+  gap:            8px;
+}
+.av-logo-img {
+  width:      100px;
+  height:     64px;
+  object-fit: cover;
+}
+.av-logo-name {
+  color:           #EED7C5;
+  font-family:     'Cinzel', serif;
+  font-size:       13px;
+  letter-spacing:  3px;
+  font-weight:     bold;
+  background:      linear-gradient(90deg, #f8bf90bb 30%, var(--gold) 50%, #fff 70%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation:       shimmer 3.5s linear infinite;
+}
+
+.av-left-content {
+  display:         flex;
+  flex-direction:  column;
+  justify-content: center;
+  align-items:     center;
+  flex:            1;
+  width:           100%;
+}
+.av-already-text {
+  color:         var(--cream);
+  font-size:     15px;
+  margin-bottom: 14px;
+  text-align:    center;
+}
+.av-login-btn {
+  background:     transparent;
+  border:         1.5px solid var(--cream);
+  border-radius:  50px;
+  color:          var(--cream);
+  padding:        8px 28px;
+  font-size:      15px;
+  cursor:         pointer;
+  letter-spacing: 0.5px;
+  font-family:    'Georgia', serif;
+  transition:     background 0.25s, color 0.25s, box-shadow 0.25s;
+}
+.av-login-btn:hover {
+  background: var(--cream);
+  color:      var(--bordeaux);
+  box-shadow: 0 0 14px rgba(249,239,221,0.4);
+}
+
+.av-socials {
+  display:    flex;
+  gap:        18px;
+  margin-top: auto;
+}
+.av-social-icon {
+  color:      var(--cream);
+  cursor:     pointer;
+  opacity:    0.75;
+  display:    flex;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.av-social-icon:hover { opacity: 1; transform: translateY(-2px); }
+
+/* ════════════════════════════════
+   SÉPARATEUR
+════════════════════════════════ */
+.av-divider {
+  width:      2px;
+  min-height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--gold) 15%,
+    var(--gold) 85%,
+    transparent 100%
+  );
+  align-self: stretch;
+  z-index:    2;
+}
+
+/* ════════════════════════════════
+   PANNEAU DROIT
+════════════════════════════════ */
+.av-right-panel {
+  position:        relative;
+  z-index:         2;
+  flex:            1;
+  display:         flex;
+  align-items:     center;
+  justify-content: flex-start;
+  padding-left:    60px;
+  background:      linear-gradient(160deg, var(--left-bg) 10%, var(--left-bg2) 100%);
+  animation:       glowPulse 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.av-orn-top-right {
+  position: absolute; top: 12%; right: 31%; width: 130px;
+  opacity: 0.9; pointer-events: none; z-index: 3;
+}
+.av-orn-bottom-left {
+  position: absolute; bottom: 14%; left: 14%; width: 130px;
+  opacity: 0.9; pointer-events: none; z-index: 3;
+}
+.av-hand {
+  position: absolute; top: 20%; right: 0; bottom: 0; height: 65%;
+  pointer-events: none; z-index: 1;
+  object-fit: contain; object-position: bottom right;
+}
+
+/* ── Carte parchemin ── */
+.av-card-wrapper {
+  position:   relative;
+  width:      340px;
+  min-height: 400px;
+  display:    flex;
+  right:      4%;
+}
+.av-card-bg {
+  position: absolute; top: 0; left: 0;
+  width: 250%; height: 100%;
+  object-fit: fill; z-index: 1; border-radius: 8px;
+}
+.av-medallion {
+  position: absolute; top: 0; left: 120%;
+  transform: translateX(-50%);
+  width: 55px; height: 55px; object-fit: contain; z-index: 1;
+}
+.av-card-content {
+  position:       relative;
+  z-index:        2;
+  display:        flex;
+  flex-direction: column;
+  gap:            14px;
+  padding:        60px 30px 36px 30px;
+  width:          100%;
+  overflow:       visible;
+}
+.av-parch-title {
+  text-align:     center;
+  font-size:      18px;
+  color:          var(--brown);
+  font-weight:    normal;
+  margin-bottom:  8px;
+  letter-spacing: 0.3px;
+  transform:      translate(90%, 0);
+}
+
+/* ════════════════════════════════
+   INDICATEUR ÉTAPES
+════════════════════════════════ */
+.av-steps-indicator {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             6px;
+  transform:       translate(90%);
+  margin-bottom:   4px;
+}
+.av-step-dot {
+  width:         10px; height: 10px;
+  border-radius: 50%;
+  background:    rgba(55,4,14,0.2);
+  border:        1.5px solid rgba(55,4,14,0.35);
+  transition:    background 0.3s, border-color 0.3s;
+  flex-shrink:   0;
+}
+.av-step-dot--active {
+  background:  var(--brown);
+  border-color: var(--brown);
+  box-shadow:  0 0 6px rgba(55,4,14,0.4);
+}
+.av-step-dot--done {
+  background:  var(--brown-light);
+  border-color: var(--brown-light);
+  cursor:      pointer;
+}
+.av-step-dot--done:hover { opacity: 0.75; }
+.av-step-line {
+  flex: 1; max-width: 40px; height: 1.5px;
+  background: rgba(55,4,14,0.2); transition: background 0.3s;
+}
+.av-step-line--done { background: var(--brown-light); }
+
+/* ════════════════════════════════
+   CHAMPS FORMULAIRE
+════════════════════════════════ */
+.av-field-wrap {
+  display:       flex;
+  align-items:   center;
+  background:    rgba(232,216,196,0.85);
+  border-radius: 20px;
+  padding:       6px 14px;
+  gap:           10px;
+  transform:     translate(90%);
+}
+.av-field-wrap--drop { position: relative; overflow: visible; }
+
+/* ── Icône lucide dans les champs ── */
+.av-field-icon {
+  display:     flex;
+  align-items: center;
+  flex-shrink: 0;
+  color:       var(--brown);
+  opacity:     0.65;
+  line-height: 1;
+}
+
+.av-field-input {
+  flex:        1;
+  background:  transparent;
+  border:      none;
+  outline:     none;
+  font-size:   13px;
+  color:       var(--brown);
+  font-family: 'Georgia', serif;
+  cursor:      text;
+}
+
+/* ── Photo label ── */
+/* ── Photo label amélioré ── */
+.av-photo-label { 
+  flex: 1; 
+  display: flex; 
+  align-items: center; 
+  cursor: pointer; 
+  min-width: 0;
+  width: 100%;
+  padding: 4px 0; /* Ajout d'un peu de padding */
+}
+
+.av-photo-text {
+  font-size: 13px; 
+  color: var(--brown); 
+  font-family: 'Georgia', serif;
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.av-photo-input { 
+  display: none; /* Cache l'input file natif */
+}
+
+/* Pour s'assurer que le champ garde le même style que les autres */
+.av-field-wrap {
+  display: flex;
+  align-items: center;
+  background: rgba(232,216,196,0.85);
+  border-radius: 20px;
+  padding: 6px 14px;
+  gap: 10px;
+  transform: translate(90%);
+  min-height: 36px; /* Hauteur cohérente avec les autres champs */
+}
+/* ── Dropdown ── */
+.av-drop-btn {
+  width: 100%; background: transparent; border: none; outline: none;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--brown); cursor: pointer;
+  font-family: 'Georgia', serif; padding: 0;
+}
+.av-drop-arrow { font-size: 11px; color: var(--brown); opacity: 0.7; transition: transform 0.2s; }
+.av-drop-arrow--open { transform: rotate(180deg); }
+
+.av-drop-list {
+  background: var(--field-bg); border: 1px solid var(--gold);
+  border-radius: 10px; list-style: none; margin: 0; padding: 6px 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.av-drop-item {
+  padding: 8px 16px; font-size: 13px; color: var(--brown);
+  cursor: pointer; transition: background 0.15s; font-family: 'Georgia', serif;
+}
+.av-drop-item:hover { background: #ddd0bc; }
+
+/* ════════════════════════════════
+   BOUTONS
+════════════════════════════════ */
+
+/* ── Bouton principal (S'inscrire / Suivant / Se connecter) ── */
+.av-submit-btn {
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  gap:            6px;
+  margin-top:     4px;
+  background:     rgba(232,216,196,0.85);
+  border:         none;
+  border-radius:  20px;
+  padding:        9px 0;
+  font-size:      14px;
+  color:          var(--brown);
+  cursor:         pointer;
+  letter-spacing: 0.5px;
+  font-family:    'Georgia', serif;
+  transition:     background 0.25s, color 0.25s, opacity 0.25s;
+  width:          100%;
+  transform:      translate(90%);
+}
+.av-submit-btn:hover {
+  background: var(--brown);
+  color:      var(--cream);
+}
+.av-submit-btn:hover .av-field-icon,
+.av-submit-btn:hover svg { color: var(--cream); }
+
+.av-submit-btn--disabled { opacity: 0.45; cursor: not-allowed; }
+.av-submit-btn--disabled:hover {
+  background: rgba(232,216,196,0.85);
+  color:      var(--brown);
+}
+
+/* ── Bouton Retour ── */
+.av-back-btn {
+  display:        flex;
+  align-items:    center;
+  justify-content: center;
+  gap:            5px;
+  background:     transparent;
+  border:         1.5px solid rgba(55,4,14,0.35);
+  border-radius:  20px;
+  padding:        7px 0;
+  font-size:      13px;
+  color:          var(--brown);
+  cursor:         pointer;
+  letter-spacing: 0.4px;
+  font-family:    'Georgia', serif;
+  opacity:        0.75;
+  width:          100%;
+  transform:      translate(90%);
+  transition:     background 0.22s, color 0.22s, opacity 0.22s, border-color 0.22s;
+}
+.av-back-btn:hover {
+  opacity:      1;
+  background:   rgba(55,4,14,0.08);
+  border-color: var(--brown);
+  color:        var(--brown);
+}
+.av-back-btn:active {
+  background: rgba(55,4,14,0.15);
+  transform:  translate(90%) scale(0.98);
+}
+
+/* ── Switch lien ── */
+.av-switch-link {
+  text-align: center; font-size: 13px; color: var(--brown);
+  margin-top: 2px; transform: translate(90%);
+}
+.av-switch-anchor { text-decoration: underline; cursor: pointer; }
