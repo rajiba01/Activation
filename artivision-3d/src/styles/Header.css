@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cormorant+Garamond:wght@300;400;500;600&display=swap');
+
+.header {
+  background-color: #2C0A0A;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(212, 180, 140, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: 40px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex: 1;
+}
+
+.header__nav--right {
+  justify-content: flex-end;
+}
+
+.header__link {
+  font-family: 'Cormorant Garamond', serif;
+  color: #E8D5B7;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.header__link:hover {
+  opacity: 0.65;
+}
+
+.header__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  
+}
+
+
+.header__logo-img {
+  width: 85px;
+  height: 55px;
+}
+.header__logo-text {
+  font-family: 'Playfair Display', serif;
+  color: #E8D5B7;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.header__btn {
+  font-family: 'Cormorant Garamond', serif;
+  background-color: #7A1A1A;
+  color: #F5ECD7;
+  padding: 7px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.header__btn:hover {
+  background-color: #8B2020;
+}
+section[id] {
+  scroll-margin-top: 80px;
+}
