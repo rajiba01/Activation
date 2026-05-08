@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import "../styles/Accueil.css";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import "../../styles/Accueil.css";
 
 // ─── Data statique (galleries, stats, reviews, faqs, heroSlides) ──────────────
 

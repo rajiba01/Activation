@@ -1,7 +1,183 @@
 import { useState, useEffect, useRef } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import "../styles/UserPage.css";
+import Header from "../../components/UserHeader";
+import Footer from "../../components/Footer";
+import "../../styles/UserPage.css";
+
+// ─── SVG Icon Components ───────────────────────────────────────────────────────
+
+const Icon = {
+  Search: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  ),
+  Ticket: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/>
+    </svg>
+  ),
+  Building: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+    </svg>
+  ),
+  Bot: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="10" rx="2"/>
+      <circle cx="12" cy="5" r="2"/><path d="M12 7v4"/>
+      <line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+    </svg>
+  ),
+  Frame: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="1"/>
+      <rect x="7" y="7" width="10" height="10"/>
+    </svg>
+  ),
+  Clock: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+    </svg>
+  ),
+  Palette: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+    </svg>
+  ),
+  Eye: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  Star: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="currentColor" stroke="currentColor" strokeWidth="0">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  ),
+  StarOutline: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  ),
+  Heart: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="currentColor" stroke="currentColor" strokeWidth="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ),
+  HeartOutline: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  ),
+  Play: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="currentColor" stroke="none">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </svg>
+  ),
+  Lock: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  ),
+  Check: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  ),
+  ThumbsUp: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z"/>
+      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+    </svg>
+  ),
+  Close: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  Gift: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 12 20 22 4 22 4 12"/>
+      <rect x="2" y="7" width="20" height="5"/>
+      <line x1="12" y1="22" x2="12" y2="7"/>
+      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+    </svg>
+  ),
+  Home: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  Smile: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+      <line x1="9" y1="9" x2="9.01" y2="9"/>
+      <line x1="15" y1="9" x2="15.01" y2="9"/>
+    </svg>
+  ),
+  Sparkle: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M12 2l1.8 5.4L19.2 9l-5.4 1.8L12 16.2l-1.8-5.4L4.8 9l5.4-1.8L12 2z"/>
+      <path d="M19 15l.9 2.7 2.7.9-2.7.9L19 22l-.9-2.7-2.7-.9 2.7-.9L19 15z"/>
+      <path d="M5 15l.6 1.8 1.8.6-1.8.6L5 19.8l-.6-1.8-1.8-.6 1.8-.6L5 15z"/>
+    </svg>
+  ),
+  Arrow: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/>
+      <polyline points="12 5 19 12 12 19"/>
+    </svg>
+  ),
+  CreditCard: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+      <line x1="1" y1="10" x2="23" y2="10"/>
+    </svg>
+  ),
+  Maximize: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+  ),
+};
+
+const IC = ({ name, size = 18, style = {}, className = "" }) => {
+  const Comp = Icon[name];
+  if (!Comp) return null;
+  return <Comp width={size} height={size} style={style} className={className} />;
+};
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
 
@@ -13,10 +189,10 @@ const USER = {
 };
 
 const HOW_TO_STEPS = [
-  { icon: "🔍", titre: "Parcourez les galeries", desc: "Explorez notre sélection filtrée selon vos goûts artistiques." },
-  { icon: "🎟", titre: "Choisissez & payez",     desc: "Sélectionnez une galerie et payez — sécurisé et instantané." },
-  { icon: "🏛", titre: "Entrez en 3D",            desc: "Accédez à l'espace immersif pendant toute la durée choisie." },
-  { icon: "🤖", titre: "Dialoguez avec l'IA",     desc: "Le chatbot attaché à chaque tableau répond à vos questions." },
+  { iconName: "Search", titre: "Parcourez les galeries", desc: "Explorez notre sélection filtrée selon vos goûts artistiques." },
+  { iconName: "Ticket", titre: "Choisissez & payez",     desc: "Sélectionnez une galerie et payez — sécurisé et instantané." },
+  { iconName: "Building", titre: "Entrez en 3D",         desc: "Accédez à l'espace immersif pendant toute la durée choisie." },
+  { iconName: "Bot", titre: "Dialoguez avec l'IA",       desc: "Le chatbot attaché à chaque tableau répond à vos questions." },
 ];
 
 const TRAILER_GALLERY = {
@@ -189,8 +365,9 @@ function Stars({ count, size = 14 }) {
   return (
     <div className="up-review-card__stars">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={`up-review-card__star ${i < count ? "up-review-card__star--on" : ""}`}
-          style={{ fontSize: size }}>★</span>
+        <span key={i} className={`up-review-card__star ${i < count ? "up-review-card__star--on" : ""}`}>
+          <IC name="Star" size={size} />
+        </span>
       ))}
     </div>
   );
@@ -211,7 +388,9 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
         onClick={e => { e.stopPropagation(); onToggleFavorite(galerie.id); }}
         aria-label="Ajouter aux favoris"
       >
-        {isFavorite ? "♥" : "♡"}
+        {isFavorite
+          ? <IC name="Heart" size={16} />
+          : <IC name="HeartOutline" size={16} />}
       </button>
 
       <div className="up-card__img-wrap">
@@ -236,9 +415,18 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
       </div>
 
       <div className="up-card__stats">
-        <span className="up-card__stat"><span className="up-card__stat-icon">🖼</span> {galerie.nbOeuvres} œuvres</span>
-        <span className="up-card__stat"><span className="up-card__stat-icon">👁</span> {galerie.nbVisiteurs.toLocaleString()}</span>
-        <span className="up-card__stat up-card__stat--rating">★ {galerie.rating}</span>
+        <span className="up-card__stat">
+          <span className="up-card__stat-icon"><IC name="Frame" size={13} /></span>
+          {galerie.nbOeuvres} œuvres
+        </span>
+        <span className="up-card__stat">
+          <span className="up-card__stat-icon"><IC name="Eye" size={13} /></span>
+          {galerie.nbVisiteurs.toLocaleString()}
+        </span>
+        <span className="up-card__stat up-card__stat--rating">
+          <IC name="Star" size={12} style={{ marginRight: 2 }} />
+          {galerie.rating}
+        </span>
       </div>
 
       <div className="up-card__footer">
@@ -246,7 +434,9 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
           <span className="up-card__price">{galerie.prix} DT</span>
           <span className="up-card__duree">Accès {galerie.dureeAcces}</span>
         </div>
-        <button className="up-card__cta" onClick={() => onEnter(galerie)}>Entrer ›</button>
+        <button className="up-card__cta" onClick={() => onEnter(galerie)}>
+          Entrer <IC name="Arrow" size={14} style={{ marginLeft: 4 }} />
+        </button>
       </div>
     </div>
   );
@@ -259,6 +449,13 @@ function TrailerSection({ onWatch }) {
     "/images/galerie/g1.jpg",
     "/images/galerie/g2.jpg",
     "/images/galerie/g4.jpg",
+  ];
+
+  const features = [
+    { iconName: "Building", text: "Galerie 3D complète — navigation libre" },
+    { iconName: "Bot",      text: "Chatbot IA sur chaque œuvre" },
+    { iconName: "Palette",  text: "5 chefs-d'œuvre soigneusement sélectionnés" },
+    { iconName: "Clock",    text: "Accès 30 minutes — sans carte bancaire" },
   ];
 
   return (
@@ -282,14 +479,9 @@ function TrailerSection({ onWatch }) {
           </div>
 
           <div className="up-trailer__features">
-            {[
-              { icon: "🏛", text: "Galerie 3D complète — navigation libre" },
-              { icon: "🤖", text: "Chatbot IA sur chaque œuvre" },
-              { icon: "🎨", text: "5 chefs-d'œuvre soigneusement sélectionnés" },
-              { icon: "⏱",  text: "Accès 30 minutes — sans carte bancaire" },
-            ].map((f, i) => (
+            {features.map((f, i) => (
               <div key={i} className="up-trailer__feature">
-                <div className="up-trailer__feature-icon">{f.icon}</div>
+                <div className="up-trailer__feature-icon"><IC name={f.iconName} size={16} /></div>
                 {f.text}
               </div>
             ))}
@@ -297,11 +489,12 @@ function TrailerSection({ onWatch }) {
 
           <div>
             <button className="up-trailer__play-btn" onClick={onWatch}>
-              <div className="up-trailer__play-icon">▶</div>
+              <div className="up-trailer__play-icon"><IC name="Play" size={16} /></div>
               Lancer la visite gratuite
             </button>
             <div className="up-trailer__free-tag">
-              ✓ Aucune carte bancaire · Accès immédiat
+              <IC name="Check" size={13} style={{ marginRight: 5 }} />
+              Aucune carte bancaire · Accès immédiat
             </div>
           </div>
         </div>
@@ -320,7 +513,10 @@ function TrailerSection({ onWatch }) {
             <div style={{ position: "relative" }}>
               <img src={MOSAIC_IMGS[2]} alt="galerie" className="up-trailer__mosaic-img"
                 onError={e => { e.target.src = "https://picsum.photos/400/210?random=12"; }} />
-              <div className="up-trailer__overlay-badge">✦ Free Trailer</div>
+              <div className="up-trailer__overlay-badge">
+                <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
+                Free Trailer
+              </div>
             </div>
           </div>
         </div>
@@ -333,7 +529,7 @@ function TrailerSection({ onWatch }) {
 // ─── Trailer Modal ─────────────────────────────────────────────────────────────
 
 function TrailerModal({ onClose }) {
-  const [countdown, setCountdown] = useState(30 * 60); // 30min in seconds
+  const [countdown, setCountdown] = useState(30 * 60);
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
@@ -355,21 +551,31 @@ function TrailerModal({ onClose }) {
         <div className="up-trailer-modal__top">
           <img src="/images/galerie/g1.jpg" alt="trailer" className="up-trailer-modal__preview-img"
             onError={e => { e.target.src = "https://picsum.photos/700/340?random=20"; }} />
-          <button className="up-trailer-modal__close-btn" onClick={onClose}>✕</button>
+          <button className="up-trailer-modal__close-btn" onClick={onClose}>
+            <IC name="Close" size={16} />
+          </button>
 
           <div className="up-trailer-modal__center">
             {!started ? (
               <>
-                <div className="up-trailer-modal__big-play" onClick={() => setStarted(true)}>▶</div>
+                <div className="up-trailer-modal__big-play" onClick={() => setStarted(true)}>
+                  <IC name="Play" size={32} />
+                </div>
                 <p className="up-trailer-modal__play-label">Démarrer la visite gratuite</p>
-                <div className="up-trailer-modal__timer">⏱ 30 min d'accès offert</div>
+                <div className="up-trailer-modal__timer">
+                  <IC name="Clock" size={14} style={{ marginRight: 5 }} />
+                  30 min d'accès offert
+                </div>
               </>
             ) : (
               <>
-                <div className="up-trailer-modal__big-play">🏛</div>
+                <div className="up-trailer-modal__big-play">
+                  <IC name="Building" size={32} />
+                </div>
                 <p className="up-trailer-modal__play-label">Visite en cours…</p>
                 <div className="up-trailer-modal__timer">
-                  ⏱ {fmt(countdown)} restantes
+                  <IC name="Clock" size={14} style={{ marginRight: 5 }} />
+                  {fmt(countdown)} restantes
                 </div>
               </>
             )}
@@ -387,17 +593,17 @@ function TrailerModal({ onClose }) {
             {!started ? (
               <>
                 <button className="up-trailer-modal__cta" onClick={() => setStarted(true)}>
-                  ▶ Commencer maintenant
+                  <IC name="Play" size={14} style={{ marginRight: 6 }} />
+                  Commencer maintenant
                 </button>
-                <button className="up-trailer-modal__skip" onClick={onClose}>
-                  Fermer
-                </button>
+                <button className="up-trailer-modal__skip" onClick={onClose}>Fermer</button>
               </>
             ) : (
               <>
                 <a href="/galerie/trailer" className="up-trailer-modal__cta"
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
-                  🏛 Entrer dans la galerie
+                  <IC name="Building" size={14} style={{ marginRight: 6 }} />
+                  Entrer dans la galerie
                 </a>
                 <button className="up-trailer-modal__skip" onClick={onClose}>Fermer</button>
               </>
@@ -430,7 +636,10 @@ function ReviewsSection() {
     <section className="up-reviews">
       <div className="up-reviews__head">
         <div className="up-reviews__title-wrap">
-          <span className="up-reviews__eyebrow">✦ Témoignages</span>
+          <span className="up-reviews__eyebrow">
+            <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
+            Témoignages
+          </span>
           <h2 className="up-reviews__title">Ce que disent nos visiteurs</h2>
         </div>
         <div className="up-reviews__avg">
@@ -438,7 +647,9 @@ function ReviewsSection() {
           <div className="up-reviews__avg-stars">
             <div className="up-reviews__stars-row">
               {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className={`up-reviews__star ${i < Math.round(AVG_RATING) ? "up-reviews__star--on" : ""}`}>★</span>
+                <span key={i} className={`up-reviews__star ${i < Math.round(AVG_RATING) ? "up-reviews__star--on" : ""}`}>
+                  <IC name="Star" size={16} />
+                </span>
               ))}
             </div>
             <span className="up-reviews__avg-count">{REVIEWS.length} avis vérifiés</span>
@@ -465,7 +676,8 @@ function ReviewsSection() {
                 className={`up-review-card__helpful ${helpfulClicked[r.id] ? "up-review-card__helpful--active" : ""}`}
                 onClick={() => toggleHelpful(r.id)}
               >
-                👍 Utile ({helpfulCounts[r.id]})
+                <IC name="ThumbsUp" size={13} style={{ marginRight: 5 }} />
+                Utile ({helpfulCounts[r.id]})
               </button>
             </div>
           </div>
@@ -486,10 +698,10 @@ function ReviewsSection() {
 // ─── Entry Modal ───────────────────────────────────────────────────────────────
 
 const HOW_TO_MODAL = [
-  { icon: "🎟", titre: "Paiement immédiat",   desc: "Transaction sécurisée. Votre accès est activé instantanément." },
-  { icon: "🏛", titre: "Galerie 3D",          desc: "Naviguez librement dans l'espace virtuel pendant toute la durée." },
-  { icon: "🤖", titre: "Chatbot IA",          desc: "Chaque œuvre dispose d'un assistant qui répond à vos questions." },
-  { icon: "🖼", titre: "Essai dans votre intérieur", desc: "Visualisez l'œuvre chez vous avant de l'acheter." },
+  { iconName: "CreditCard", titre: "Paiement immédiat",         desc: "Transaction sécurisée. Votre accès est activé instantanément." },
+  { iconName: "Building",   titre: "Galerie 3D",                desc: "Naviguez librement dans l'espace virtuel pendant toute la durée." },
+  { iconName: "Bot",        titre: "Chatbot IA",                desc: "Chaque œuvre dispose d'un assistant qui répond à vos questions." },
+  { iconName: "Home",       titre: "Essai dans votre intérieur", desc: "Visualisez l'œuvre chez vous avant de l'acheter." },
 ];
 
 function EntryModal({ galerie, onClose }) {
@@ -506,12 +718,14 @@ function EntryModal({ galerie, onClose }) {
   return (
     <div className="up-modal-backdrop" onClick={onClose}>
       <div className="up-modal" onClick={e => e.stopPropagation()}>
-        <button className="up-modal__close" onClick={onClose}>✕</button>
+        <button className="up-modal__close" onClick={onClose}>
+          <IC name="Close" size={16} />
+        </button>
 
         {!paid ? (
           <>
             <div className="up-modal__header">
-              <span className="up-modal__icon">🏛</span>
+              <span className="up-modal__icon"><IC name="Building" size={28} /></span>
               <h2 className="up-modal__title">{galerie.titre}</h2>
               <p className="up-modal__artiste">par {galerie.artiste}</p>
             </div>
@@ -520,7 +734,7 @@ function EntryModal({ galerie, onClose }) {
               <p className="up-modal__steps-title">Comment ça marche ?</p>
               {HOW_TO_MODAL.map((s, i) => (
                 <div key={i} className="up-modal__step">
-                  <div className="up-modal__step-icon">{s.icon}</div>
+                  <div className="up-modal__step-icon"><IC name={s.iconName} size={18} /></div>
                   <div>
                     <p className="up-modal__step-titre">{s.titre}</p>
                     <p className="up-modal__step-desc">{s.desc}</p>
@@ -546,21 +760,33 @@ function EntryModal({ galerie, onClose }) {
             >
               {paying
                 ? <span className="up-modal__spinner" />
-                : <>🎟 Payer & Entrer — {galerie.prix} DT</>
+                : (
+                  <>
+                    <IC name="Ticket" size={16} style={{ marginRight: 7 }} />
+                    Payer & Entrer — {galerie.prix} DT
+                  </>
+                )
               }
             </button>
-            <p className="up-modal__secure">🔒 Paiement sécurisé · Accès immédiat</p>
+            <p className="up-modal__secure">
+              <IC name="Lock" size={13} style={{ marginRight: 5 }} />
+              Paiement sécurisé · Accès immédiat
+            </p>
           </>
         ) : (
           <div className="up-modal__success">
-            <span className="up-modal__success-icon">✦</span>
+            <span className="up-modal__success-icon"><IC name="Sparkle" size={36} /></span>
             <h2 className="up-modal__success-title">Accès confirmé !</h2>
             <p className="up-modal__success-sub">
               Vous avez accès à <strong>"{galerie.titre}"</strong> pendant <strong>{galerie.dureeAcces}</strong>.
             </p>
-            <div className="up-modal__success-badge">Votre ticket d'entrée est prêt</div>
+            <div className="up-modal__success-badge">
+              <IC name="Ticket" size={14} style={{ marginRight: 6 }} />
+              Votre ticket d'entrée est prêt
+            </div>
             <a href={`/galerie/${galerie.id}`} className="up-modal__enter-btn">
-              🏛 Entrer dans la galerie maintenant
+              <IC name="Building" size={16} style={{ marginRight: 7 }} />
+              Entrer dans la galerie maintenant
             </a>
           </div>
         )}
@@ -655,11 +881,11 @@ export default function UserPage() {
   return (
     <>
       <Header />
-      
+
       {/* ── Onboarding Banner ── */}
       {showOnboarding && (
         <div className="up-onboard">
-          <span className="up-onboard__icon">🎉</span>
+          <span className="up-onboard__icon"><IC name="Gift" size={22} /></span>
           <div className="up-onboard__text">
             <p className="up-onboard__title">Bienvenue, {USER.prenom} ! Votre compte est activé.</p>
             <p className="up-onboard__sub">
@@ -675,15 +901,20 @@ export default function UserPage() {
               </div>
             ))}
           </div>
-          <button className="up-onboard__close" onClick={() => setShowOnboarding(false)}>✕</button>
+          <button className="up-onboard__close" onClick={() => setShowOnboarding(false)}>
+            <IC name="Close" size={14} />
+          </button>
         </div>
       )}
 
       {/* ── Welcome ── */}
       <div className="up-welcome">
         <div>
-          <span className="up-welcome__greeting">✦ Espace Visiteur</span>
-          <h1 className="up-welcome__title">Bonjour, <em>{USER.prenom}</em> 👋</h1>
+          <span className="up-welcome__greeting">
+            <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
+            Espace Visiteur
+          </span>
+          <h1 className="up-welcome__title">Bonjour, <em>{USER.prenom}</em></h1>
           <p className="up-welcome__sub">
             Découvrez des galeries d'art virtuelles en 3D — payez l'entrée et explorez à votre rythme.
           </p>
@@ -709,7 +940,7 @@ export default function UserPage() {
         {HOW_TO_STEPS.map((s, i) => (
           <div key={i} className="up-howto__step">
             <span className="up-howto__num">0{i + 1}</span>
-            <div className="up-howto__icon">{s.icon}</div>
+            <div className="up-howto__icon"><IC name={s.iconName} size={22} /></div>
             <div>
               <p className="up-howto__titre">{s.titre}</p>
               <p className="up-howto__desc">{s.desc}</p>
@@ -729,7 +960,7 @@ export default function UserPage() {
         </div>
         <div className="up-filters-right">
           <div className="up-search-wrap">
-            <span className="up-search-icon">🔍</span>
+            <span className="up-search-icon"><IC name="Search" size={15} /></span>
             <input
               className="up-search"
               placeholder="Galerie, artiste…"
@@ -765,7 +996,7 @@ export default function UserPage() {
         <div className="up-grid">
           {filtered.length === 0 ? (
             <div className="up-empty">
-              <span className="up-empty__icon">🎨</span>
+              <span className="up-empty__icon"><IC name="Palette" size={40} /></span>
               <p className="up-empty__text">Aucune galerie trouvée.</p>
             </div>
           ) : (

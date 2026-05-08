@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Galerie 3D</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: sans-serif; }
+    #info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px 20px;
+      color: white;
+      z-index: 100;
+      border-radius: 8px;
+      pointer-events: none;
+      font-size: 14px;
+    }
+    #controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px 15px;
+      color: white;
+      z-index: 100;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <h3>🎨 Galerie 3D - Test</h3>
+    <p>🔹 <strong>Tab</strong> : Auto ↔ Manuel | 🔹 <strong>WASD/Flèches</strong> : se déplacer</p>
+    <p>🔹 <strong>Escape</strong> : quitter mode manuel | 🔹 <strong>Clic</strong> : regarder autour</p>
+  </div>
+  <div id="controls">
+    <div id="mode-status">Mode: AUTO</div>
+    <div id="play-status">Play: ▶️</div>
+  </div>
+  <div id="root"></div>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "zustand": "https://esm.sh/zustand@4.5.0",
+        "three": "https://esm.sh/three@0.128.0",
+        "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.12",
+        "@react-three/drei": "https://esm.sh/@react-three/drei@9.92.7",
+        "three-stdlib": "https://esm.sh/three-stdlib@2.28.0"
+      }
+    }
+  </script>
+  
+  <script type="module">
+    import React from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { Canvas, useFrame, useThree } from '@react-three/fiber';
+    import { 
+      OrbitControls, 
+      Environment, 
+      useTexture, 
+      Text,
+      PerspectiveCamera,
+      PointerLockControls as DreiPointerLockControls
+    } from '@react-three/drei';
+    import * as THREE from 'three';
+    import { create } from 'zustand';
+
+    // ========== STORE ==========
+    const useGalleryStore = create((set) => ({
+      cameraPosition: [0, 1.7, 8],
+      cameraTarget: [0, 1.7, 0],
+      navMode: "auto",
+      isPlaying: true,
+      activeRoom: 1,
+      selectedArtwork: null,
+      artworks: [],
+      setNavMode: (mode) => set({ navMode: mode }),
+      togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
+      setSelectedArtwork: (artwork) => set({ selectedArtwork: artwork }),
+    }));
+
+    // ========== MOCK DATA ==========
+    const mockArtworks = [
+      { id: 1, title: "Nuit étoilée", artist: "Van Gogh", price: 2500, image_url: "https://picsum.photos/id/104/400/300", position_x: -5, position_y: 1.7, position_z: -4.95, rotation_y: 0, display_width: 1.2, display_height: 0.9 },
+      { id: 2, title: "Mona Lisa", artist: "Da Vinci", price: 5000, image_url: "https://picsum.photos/id/20/400/300", position_x: -2, position_y: 1.7, position_z: -4.95, rotation_y: 0, display_width: 1.2, display_height: 0.9 },
+      { id: 3, title: "La Persistance", artist: "Dali", price: 3200, image_url: "https://picsum.photos/id/30/400/300", position_x: 1, position_y: 1.7, position_z: -4.95, rotation_y: 0, display_width: 1.2, display_height: 0.9 },
+      { id: 4, title: "Le Cri", artist: "Munch", price: 2800, image_url: "https://picsum.photos/id/96/400/300", position_x: 4, position_y: 1.7, position_z: -4.95, rotation_y: 0, display_width: 1.2, display_height: 0.9 },
+      { id: 5, title: "Guernica", artist: "Picasso", price: 8000, image_url: "https://picsum.photos/id/15/400/300", position_x: -5, position_y: 1.7, position_z: 4.95, rotation_y: 3.14159, display_width: 1.2, display_height: 0.9 },
+      { id: 6, title: "La Nuit", artist: "Rembrandt", price: 4500, image_url: "https://picsum.photos/id/42/400/300", position_x: -2, position_y: 1.7, position_z: 4.95, rotation_y: 3.14159, display_width: 1.2, display_height: 0.9 },
+    ];
+
+    // ========== COMPOSANTS ==========
+    
+    // ArtworkFrame simplifié
+    function ArtworkFrame({ artwork, position, rotation, onClick }) {
+      const [hovered, setHovered] = React.useState(false);
+      const meshRef = React.useRef();
+      let texture = null;
+      try {
+        texture = useTexture(artwork.image_url);
+      } catch(e) {}
+      
+      const w = artwork.display_width || 1.2;
+      const h = artwork.display_height || 0.9;
+      
+      return (
+        <group 
+          ref={meshRef}
+          position={position} 
+          rotation={rotation}
+          onClick={(e) => { e.stopPropagation(); onClick(artwork); }}
+          onPointerEnter={() => { setHovered(true); document.body.style.cursor = "pointer"; }}
+          onPointerLeave={() => { setHovered(false); document.body.style.cursor = "default"; }}
+        >
+          <mesh position={[0, 0, -0.005]}>
+            <boxGeometry args={[w + 0.12, h + 0.12, 0.04]} />
+            <meshStandardMaterial color={hovered ? "#D4A853" : "#B8922A"} metalness={0.8} />
+          </mesh>
+          <mesh>
+            <planeGeometry args={[w, h]} />
+            {texture ? <meshStandardMaterial map={texture} /> : <meshStandardMaterial color="#C4A882" />}
+          </mesh>
+          <Text position={[0, -(h/2) - 0.18, 0.01]} fontSize={0.07} color="#2C0A0A" anchorX="center">
+            {artwork.title}
+          </Text>
+          <Text position={[0, -(h/2) - 0.30, 0.01]} fontSize={0.055} color="#8B6030" anchorX="center">
+            {artwork.price} DT
+          </Text>
+        </group>
+      );
+    }
+
+    // Salle1 simplifiée
+    function Salle1({ artworks, onArtworkClick }) {
+      const ROOM_WIDTH = 16;
+      const ROOM_DEPTH = 10;
+      const ROOM_HEIGHT = 4;
+      
+      const positions = [
+        { pos: [-5, 1.7, -4.95], rot: [0, 0, 0], artwork: artworks[0] },
+        { pos: [-2, 1.7, -4.95], rot: [0, 0, 0], artwork: artworks[1] },
+        { pos: [1, 1.7, -4.95], rot: [0, 0, 0], artwork: artworks[2] },
+        { pos: [4, 1.7, -4.95], rot: [0, 0, 0], artwork: artworks[3] },
+        { pos: [-5, 1.7, 4.95], rot: [0, Math.PI, 0], artwork: artworks[4] },
+        { pos: [-2, 1.7, 4.95], rot: [0, Math.PI, 0], artwork: artworks[5] },
+      ];
+      
+      return (
+        <group>
+          <ambientLight intensity={0.4} color="#fff8f0" />
+          <spotLight position={[0, 3.8, 0]} intensity={1.2} angle={0.6} penumbra={0.5} castShadow />
+          
+          {/* Sol */}
+          <mesh rotation={[-Math.PI/2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+            <planeGeometry args={[ROOM_WIDTH, ROOM_DEPTH]} />
+            <meshStandardMaterial color="#C8A882" roughness={0.8} />
+          </mesh>
+          
+          {/* Murs */}
+          <mesh position={[0, ROOM_HEIGHT/2, -ROOM_DEPTH/2]}>
+            <boxGeometry args={[ROOM_WIDTH, ROOM_HEIGHT, 0.2]} />
+            <meshStandardMaterial color="#F5F0E8" />
+          </mesh>
+          <mesh position={[0, ROOM_HEIGHT/2, ROOM_DEPTH/2]}>
+            <boxGeometry args={[ROOM_WIDTH, ROOM_HEIGHT, 0.2]} />
+            <meshStandardMaterial color="#F5F0E8" />
+          </mesh>
+          <mesh position={[-ROOM_WIDTH/2, ROOM_HEIGHT/2, 0]}>
+            <boxGeometry args={[0.2, ROOM_HEIGHT, ROOM_DEPTH]} />
+            <meshStandardMaterial color="#F5F0E8" />
+          </mesh>
+          <mesh position={[ROOM_WIDTH/2, ROOM_HEIGHT/2, 0]}>
+            <boxGeometry args={[0.2, ROOM_HEIGHT, ROOM_DEPTH]} />
+            <meshStandardMaterial color="#F5F0E8" />
+          </mesh>
+          
+          {/* Cloisons centrales */}
+          <mesh position={[-2, ROOM_HEIGHT/2, 0]}>
+            <boxGeometry args={[0.15, ROOM_HEIGHT - 0.5, 2.2]} />
+            <meshStandardMaterial color="#EDE8DE" />
+          </mesh>
+          <mesh position={[2, ROOM_HEIGHT/2, 0]}>
+            <boxGeometry args={[0.15, ROOM_HEIGHT - 0.5, 2.2]} />
+            <meshStandardMaterial color="#EDE8DE" />
+          </mesh>
+          
+          {/* Œuvres */}
+          {positions.map((slot, i) => slot.artwork && (
+            <ArtworkFrame
+              key={i}
+              artwork={slot.artwork}
+              position={slot.pos}
+              rotation={slot.rot}
+              onClick={onArtworkClick}
+            />
+          ))}
+        </group>
+      );
+    }
+
+    // Navigation simplifiée
+    function Navigation() {
+      const { camera } = useThree();
+      const { navMode, isPlaying, setNavMode } = useGalleryStore();
+      const keys = React.useRef({});
+      const velocity = React.useRef(new THREE.Vector3());
+      const tRef = React.useRef(0);
+      
+      const PATH_POINTS = [
+        new THREE.Vector3(0, 1.7, 7),
+        new THREE.Vector3(-5, 1.7, 3),
+        new THREE.Vector3(-5, 1.7, -3),
+        new THREE.Vector3(0, 1.7, -3),
+        new THREE.Vector3(0, 1.7, 0),
+        new THREE.Vector3(5, 1.7, -3),
+        new THREE.Vector3(5, 1.7, 3),
+        new THREE.Vector3(0, 1.7, 7),
+      ];
+      const curve = React.useRef(new THREE.CatmullRomCurve3(PATH_POINTS, true));
+      
+      // Mode auto
+      useFrame((_, delta) => {
+        if (navMode === 'auto' && isPlaying) {
+          tRef.current = (tRef.current + delta * 0.04) % 1;
+          const pos = curve.current.getPoint(tRef.current);
+          const ahead = curve.current.getPoint((tRef.current + 0.01) % 1);
+          camera.position.lerp(pos, 0.05);
+          const lookDir = ahead.clone().sub(camera.position).normalize();
+          const targetQ = new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 0, -1), lookDir
+          );
+          camera.quaternion.slerp(targetQ, 0.05);
+        }
+      });
+      
+      // Mode manuel - contrôles clavier
+      React.useEffect(() => {
+        const down = (e) => { keys.current[e.code] = true; };
+        const up = (e) => { keys.current[e.code] = false; };
+        window.addEventListener('keydown', down);
+        window.addEventListener('keyup', up);
+        
+        const handleTab = (e) => {
+          if (e.code === 'Tab') {
+            e.preventDefault();
+            setNavMode(navMode === 'auto' ? 'manual' : 'auto');
+            const modeText = document.getElementById('mode-status');
+            if (modeText) modeText.textContent = `Mode: ${navMode === 'auto' ? 'MANUEL' : 'AUTO'}`;
+          }
+        };
+        window.addEventListener('keydown', handleTab);
+        return () => {
+          window.removeEventListener('keydown', down);
+          window.removeEventListener('keydown', up);
+          window.removeEventListener('keydown', handleTab);
+        };
+      }, [navMode, setNavMode]);
+      
+      useFrame((_, delta) => {
+        if (navMode !== 'manual') return;
+        
+        const k = keys.current;
+        const forward = new THREE.Vector3();
+        camera.getWorldDirection(forward);
+        forward.y = 0;
+        forward.normalize();
+        const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0));
+        
+        const dir = new THREE.Vector3();
+        if (k['KeyW'] || k['ArrowUp']) dir.add(forward);
+        if (k['KeyS'] || k['ArrowDown']) dir.sub(forward);
+        if (k['KeyA'] || k['ArrowLeft']) dir.sub(right);
+        if (k['KeyD'] || k['ArrowRight']) dir.add(right);
+        dir.normalize();
+        
+        velocity.current.lerp(dir.multiplyScalar(4), 0.15);
+        const nextPos = camera.position.clone().add(velocity.current.clone().multiplyScalar(delta));
+        
+        // Collisions simples
+        if (Math.abs(nextPos.x) < 7.6 && Math.abs(nextPos.z) < 4.6) {
+          camera.position.copy(nextPos);
+        }
+        camera.position.y = 1.7;
+      });
+      
+      return navMode === 'manual' ? <DreiPointerLockControls /> : null;
+    }
+
+    // Mini-map
+    function MiniMapRenderer() {
+      const { camera } = useThree();
+      const { navMode } = useGalleryStore();
+      
+      useFrame(() => {
+        const canvas = document.getElementById('minimap-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = canvas.width, H = canvas.height;
+        
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(20,14,8,0.88)';
+        ctx.fillRect(0, 0, W, H);
+        
+        const pad = 12;
+        const scaleX = (W - pad * 2) / 16;
+        const scaleZ = (H - pad * 2) / 10;
+        
+        const toMap = (x, z) => ({
+          mx: pad + (x + 8) * scaleX,
+          my: pad + (z + 5) * scaleZ
+        });
+        
+        // Salle
+        ctx.strokeStyle = '#C9A040';
+        ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
+        
+        // Cloisons
+        ctx.fillStyle = '#7A6040';
+        const p1 = toMap(-2.2, -1.2);
+        const p2 = toMap(-1.8, 1.2);
+        ctx.fillRect(p1.mx, p1.my, p2.mx - p1.mx, p2.my - p1.my);
+        const p3 = toMap(1.8, -1.2);
+        const p4 = toMap(2.2, 1.2);
+        ctx.fillRect(p3.mx, p3.my, p4.mx - p3.mx, p4.my - p3.my);
+        
+        // Joueur
+        const { mx, my } = toMap(camera.position.x, camera.position.z);
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        const angle = Math.atan2(dir.x, dir.z);
+        
+        ctx.save();
+        ctx.translate(mx, my);
+        ctx.rotate(angle);
+        ctx.fillStyle = '#E24B4A';
+        ctx.beginPath();
+        ctx.moveTo(0, -6);
+        ctx.lineTo(-3.5, 4);
+        ctx.lineTo(3.5, 4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        
+        // Mode text
+        ctx.fillStyle = navMode === 'auto' ? '#5DCAA5' : '#7F77DD';
+        ctx.font = 'bold 8px monospace';
+        ctx.fillText(navMode === 'auto' ? 'AUTO' : 'MANUEL', pad, H - 5);
+      });
+      
+      return null;
+    }
+
+    function MiniMapCanvas() {
+      return React.createElement('div', {
+        style: {
+          position: 'absolute',
+          bottom: 24,
+          right: 24,
+          width: 160,
+          height: 110,
+          borderRadius: 10,
+          overflow: 'hidden',
+          border: '1.5px solid rgba(201,160,64,0.5)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
+          zIndex: 50
+        },
+        children: React.createElement('canvas', {
+          id: 'minimap-canvas',
+          width: 160,
+          height: 110,
+          style: { display: 'block', width: '100%', height: '100%' }
+        })
+      });
+    }
+
+    // Composant principal
+    function TestGallery() {
+      const [selectedArt, setSelectedArt] = React.useState(null);
+      const { navMode, isPlaying, togglePlay } = useGalleryStore();
+      
+      React.useEffect(() => {
+        const interval = setInterval(() => {
+          const modeEl = document.getElementById('mode-status');
+          const playEl = document.getElementById('play-status');
+          if (modeEl) modeEl.textContent = `Mode: ${navMode.toUpperCase()}`;
+          if (playEl) playEl.textContent = `Play: ${isPlaying ? '▶️' : '⏸️'}`;
+        }, 100);
+        return () => clearInterval(interval);
+      }, [navMode, isPlaying]);
+      
+      React.useEffect(() => {
+        const handleKey = (e) => {
+          if (e.code === 'KeyP' && navMode === 'auto') {
+            togglePlay();
+          }
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+      }, [navMode, togglePlay]);
+      
+      return React.createElement('div', { style: { width: '100vw', height: '100vh', position: 'relative' } },
+        React.createElement('div', { style: { position: 'absolute', bottom: 20, left: 20, zIndex: 100, background: 'rgba(0,0,0,0.85)', padding: '12px 24px', borderRadius: 12, color: 'white' } },
+          selectedArt ? [
+            React.createElement('h3', { key: 'title' }, selectedArt.title),
+            React.createElement('p', { key: 'artist' }, selectedArt.artist),
+            React.createElement('p', { key: 'price' }, `${selectedArt.price} DT`),
+            React.createElement('button', { key: 'btn', onClick: () => setSelectedArt(null), style: { padding: '5px 10px', cursor: 'pointer' } }, 'Fermer')
+          ] : React.createElement('p', null, 'Cliquez sur une œuvre')
+        ),
+        React.createElement(Canvas, { shadows: true, camera: { position: [0, 1.7, 8], fov: 75 }, style: { background: '#111' } },
+          React.createElement(Suspense, { fallback: null },
+            React.createElement(Environment, { preset: 'studio', background: false }),
+            React.createElement(Salle1, { artworks: mockArtworks, onArtworkClick: setSelectedArt }),
+            React.createElement(Navigation, null),
+            React.createElement(MiniMapRenderer, null)
+          )
+        ),
+        React.createElement(MiniMapCanvas, null)
+      );
+    }
+
+    // Rendu
+    const root = createRoot(document.getElementById('root'));
+    root.render(React.createElement(React.StrictMode, null, React.createElement(TestGallery, null)));
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/Meschambres.css";
+import "../../styles/Meschambres.css";
 
 // ─── Shared State (in production: use Context/Redux/Zustand) ──────────────────
 // MesChambers reads the same oeuvres data. In real app, both pages share
@@ -92,7 +92,7 @@ const CHAMBRES_DATA = [
     nbVisiteursTotal: 1240,
     revenus: 6200,
     headerVariant: "burg",
-    icon: "🏛",
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   },
   {
     id: "g2",
@@ -106,7 +106,7 @@ const CHAMBRES_DATA = [
     nbVisiteursTotal: 890,
     revenus: 6230,
     headerVariant: "gold",
-    icon: "✦",
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>,
   },
   {
     id: "g3",
@@ -120,17 +120,17 @@ const CHAMBRES_DATA = [
     nbVisiteursTotal: 340,
     revenus: 1360,
     headerVariant: "green",
-    icon: "◈",
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
   },
 ];
 
 const NAV_ITEMS = [
-  { icon: "◈", label: "Dashboard",     id: "dashboard", path: "/dashboard-artiste" },
-  { icon: "🖼", label: "Mes Œuvres",   id: "oeuvres",   path: "/mes-oeuvres" },
-  { icon: "🏛", label: "Mes Chambres", id: "chambre",   path: "/mes-chambres" },
-  { icon: "📊", label: "Statistiques", id: "stats",     path: "/dashboard-artiste" },
-  { icon: "✦", label: "Assistant IA",  id: "ia",        path: "/dashboard-artiste" },
-  { icon: "⚙", label: "Paramètres",   id: "settings",  path: "/dashboard-artiste" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>, label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Mes Chambres", id: "chambre", path: "/mes-chambres" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: "Statistiques", id: "stats", path: "/dashboard-artiste" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>, label: "Assistant IA", id: "ia", path: "/dashboard-artiste" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>, label: "Paramètres", id: "settings", path: "/dashboard-artiste" },
 ];
 
 // ─── Custom Scrollbar ──────────────────────────────────────────────────────────
@@ -208,14 +208,19 @@ function OeuvreDetailPanel({ oeuvre, onClose, onNavigateToEdit }) {
           <div>
             <h2 className="mc-detail-panel__title">Détails de l'œuvre</h2>
           </div>
-          <button className="mc-detail-panel__close" onClick={onClose}>✕</button>
+          <button className="mc-detail-panel__close" onClick={onClose}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
 
         <img src={oeuvre.img} alt={oeuvre.titre} className="mc-detail-panel__img"
           onError={e => { e.target.src = "https://picsum.photos/440/240?random=99"; }} />
 
         <div className="mc-detail-panel__body">
-          <span className="mc-detail-panel__galerie">✦ {oeuvre.galerieName}</span>
+          <span className="mc-detail-panel__galerie">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "4px" }}><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+            {oeuvre.galerieName}
+          </span>
           <h3 className="mc-detail-panel__name">{oeuvre.titre}</h3>
           <p className="mc-detail-panel__desc">"{oeuvre.description}"</p>
 
@@ -258,7 +263,8 @@ function OeuvreDetailPanel({ oeuvre, onClose, onNavigateToEdit }) {
           <div className="mc-detail-panel__actions">
             <button className="mc-btn mc-btn--primary" style={{ flex: 1 }}
               onClick={() => onNavigateToEdit(oeuvre)}>
-              ✏ Modifier l'œuvre
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "6px" }}><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>
+              Modifier l'œuvre
             </button>
             <button className="mc-btn mc-btn--ghost" onClick={onClose}>Fermer</button>
           </div>
@@ -285,9 +291,13 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
           <div className="mc-chambre-card__header-top">
             <div className="mc-chambre-card__icon-wrap">{chambre.icon}</div>
             <div className="mc-chambre-card__actions-head">
-              <button className="mc-chambre-card__act-btn" title="Modifier la chambre">✏</button>
+              <button className="mc-chambre-card__act-btn" title="Modifier la chambre">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>
+              </button>
               <button className="mc-chambre-card__act-btn mc-chambre-card__act-btn--del"
-                title="Supprimer la chambre" onClick={() => onDeleteChambre(chambre)}>🗑</button>
+                title="Supprimer la chambre" onClick={() => onDeleteChambre(chambre)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+              </button>
             </div>
           </div>
 
@@ -326,7 +336,9 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
 
         {oeuvres.length === 0 ? (
           <div className="mc-oeuvres-empty">
-            <span className="mc-oeuvres-empty__icon">🎨</span>
+            <span className="mc-oeuvres-empty__icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </span>
             <p className="mc-oeuvres-empty__text">Aucune œuvre dans cette galerie.</p>
             <button className="mc-btn mc-btn--primary" style={{ padding: "9px 20px", fontSize: 13 }}
               onClick={onAddOeuvre}>
@@ -357,11 +369,13 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
 
         <div className="mc-chambre-card__footer">
           <span className="mc-chambre-card__meta">
-            🗓 Créée le {new Date(chambre.dateCreation).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "4px" }}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Créée le {new Date(chambre.dateCreation).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
             &nbsp;· {chambre.decor} · {chambre.surface}
           </span>
           <a href={`/galerie/${chambre.id}`} className="mc-chambre-card__cta">
-            🏛 Visiter la galerie
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Visiter la galerie
           </a>
         </div>
       </div>
@@ -410,10 +424,10 @@ export default function MesChambres() {
   const totalPubliees = oeuvres.filter(o => o.statut === "Publié").length;
 
   const kpis = [
-    { icon: "🏛", label: "Mes galeries",    val: chambres.length,                color: "#8B2020" },
-    { icon: "🖼", label: "Œuvres exposées", val: totalOeuvres,                    color: "#C9A040" },
-    { icon: "👁", label: "Total visiteurs", val: totalVisiteurs.toLocaleString(), color: "#2C4A8B" },
-    { icon: "💰", label: "Revenus totaux",  val: `${totalRevenus.toLocaleString()} DT`, color: "#3A6B35" },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Mes galeries", val: chambres.length, color: "#8B2020" },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>, label: "Œuvres exposées", val: totalOeuvres, color: "#C9A040" },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>, label: "Total visiteurs", val: totalVisiteurs.toLocaleString(), color: "#2C4A8B" },
+    { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>, label: "Revenus totaux", val: `${totalRevenus.toLocaleString()} DT`, color: "#3A6B35" },
   ];
 
   return (
@@ -425,7 +439,10 @@ export default function MesChambres() {
         {/* Header */}
         <div className="mc-header">
           <div>
-            <span className="mc-header__eyebrow">✦ Espace Artiste</span>
+            <span className="mc-header__eyebrow">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>
+              Espace Artiste
+            </span>
             <h1 className="mc-header__title">Mes Chambres</h1>
             <p className="mc-header__sub">
               Vos galeries virtuelles et les œuvres qui y sont exposées
@@ -433,10 +450,12 @@ export default function MesChambres() {
           </div>
           <div className="mc-header__actions">
             <button className="mc-btn mc-btn--ghost" onClick={() => navigate("/mes-oeuvres")}>
-              🖼 Gérer les œuvres
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "6px" }}><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              Gérer les œuvres
             </button>
             <button className="mc-btn mc-btn--primary" onClick={() => navigate("/ajouter-galerie")}>
-              + Nouvelle galerie
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: "6px" }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nouvelle galerie
             </button>
           </div>
         </div>
@@ -455,7 +474,9 @@ export default function MesChambres() {
         {/* Chambres Grid */}
         {chambres.length === 0 ? (
           <div className="mc-empty">
-            <span className="mc-empty__icon">🏛</span>
+            <span className="mc-empty__icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
             <h2 className="mc-empty__title">Aucune galerie créée</h2>
             <p className="mc-empty__sub">Créez votre première galerie pour commencer à exposer vos œuvres.</p>
             <button className="mc-btn mc-btn--primary" onClick={() => navigate("/ajouter-galerie")}>
@@ -492,7 +513,9 @@ export default function MesChambres() {
       {deleteTarget && (
         <div className="mc-confirm-backdrop" onClick={() => setDeleteTarget(null)}>
           <div className="mc-confirm" onClick={e => e.stopPropagation()}>
-            <span className="mc-confirm__icon">🏛</span>
+            <span className="mc-confirm__icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </span>
             <h2 className="mc-confirm__title">Supprimer cette galerie ?</h2>
             <p className="mc-confirm__sub">
               La galerie <strong>"{deleteTarget.nom}"</strong> et toutes ses configurations

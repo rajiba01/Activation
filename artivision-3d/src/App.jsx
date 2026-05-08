@@ -2,19 +2,21 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 
 // Importer toutes les pages
-import Accueil from './pages/Accueil';
-import Login from './pages/Login';
-import InscriptionUser from './pages/InscriptionUser';
-import InscriptionArtiste from './pages/InscriptionArtiste';
-import ChoixStyles from './pages/ChoixStyles';
+import Accueil from './pages/client/Accueil';
+import Login from './pages/login/Login';
+import InscriptionUser from './pages/login/InscriptionUser';
+import InscriptionArtiste from './pages/login/InscriptionArtiste';
+import ChoixStyles from './pages/login/ChoixStyles';
 import DashboardUser from './pages/DashboardUser';
-import DashboardArtiste from './pages/DashboardArtiste';
-import EspaceArtiste from './pages/EspaceArtiste';
-import AjouterGalerie from './pages/AjouterGalerie';
-import ListeCommandes from './pages/ListeCommandes';
-import UserPage from './pages/Userpage';
-import MesOeuvres  from "./pages/MesOeuvres";
-import MesChambres from "./pages/MesChambres";
+import DashboardArtiste from './pages/artiste/DashboardArtiste';
+import EspaceArtiste from './pages/artiste/EspaceArtiste';
+import AjouterGalerie from './pages/artiste/AjouterGalerie';
+import ListeCommandes from './pages/artiste/ListeCommandes';
+import UserPage from './pages/client/UserPage';
+import MesOeuvres  from "./pages/artiste/MesOeuvres";
+import MesChambres from "./pages/artiste/MesChambres";
+import Scene from './components/3d/Scene';
+
 // Composant de protection des routes privées
 function PrivateRoute({ isConnected, allowedRole, userRole, children }) {
   if (!isConnected) return <Navigate to="/login" replace />;
@@ -44,6 +46,7 @@ function App() {
         <Route path="/mes-oeuvres"   element={<MesOeuvres />} />
         <Route path="/mes-chambres"  element={<MesChambres />} />
 
+        <Route path="/scene" element={<Scene />} />
 
         {/* ── Pages privées ── */}
         <Route

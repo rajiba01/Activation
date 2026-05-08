@@ -4,7 +4,7 @@ import {
   User, AtSign, Mail, Lock, AlignLeft,
   Palette, Camera, ChevronLeft, ChevronRight,
 } from "lucide-react";
-import '../styles/InscriptionArtiste.css';
+import '../../styles/InscriptionArtiste.css';
 
 const IMG = {
   logo:   "/images/logo_artivision.png",

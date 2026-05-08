@@ -1,6 +1,153 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/Mesoeuvres.css";
+import "../../styles/Mesoeuvres.css";
+
+// ─── SVG Icons ──────────────────────────────────────────────────────────────
+
+const Icons = {
+  Dashboard: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  ),
+  Oeuvres: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="2.5" />
+      <path d="M21 15L16 10L5 21" />
+    </svg>
+  ),
+  Chambres: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M9 22V12h6v10" />
+    </svg>
+  ),
+  Stats: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  ),
+  AssistantIA: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a5 5 0 0 0-5 5v5a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z" />
+      <path d="M21 12c0 4.97-4.03 9-9 9" />
+      <path d="M10 17l-2 2" />
+      <path d="M18 5l-1 1" />
+    </svg>
+  ),
+  Settings: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.07.09A10 10 0 0 0 12 18a10 10 0 0 0 6.18-2.07z" />
+    </svg>
+  ),
+  Search: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="7" />
+      <line x1="21" y1="21" x2="14.5" y2="14.5" />
+    </svg>
+  ),
+  Grid: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  ),
+  List: () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17 3l4 4-8 8H9v-4l8-8z" />
+      <path d="M3 21h18" />
+    </svg>
+  ),
+  Trash: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      <line x1="10" y1="11" x2="10" y2="17" />
+      <line x1="14" y1="11" x2="14" y2="17" />
+    </svg>
+  ),
+  Ruler: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 12h18M3 6h18M3 18h18" />
+    </svg>
+  ),
+  Package: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="2" x2="12" y2="22" />
+      <path d="M2 4h20v16H2z" />
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+  ImageUpload: () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="2.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  ),
+  Close: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Warning: () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <circle cx="12" cy="16" r="0.5" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  EmptyArt: () => (
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="2.5" />
+      <path d="M21 15L16 10L5 21" />
+    </svg>
+  ),
+  ChangeImage: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  ),
+  Save: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  ),
+  TagAdd: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  )
+};
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
 
@@ -68,12 +215,12 @@ const TECHNIQUES = [
 const STATUTS = ["Tous", "Publié", "Brouillon", "Vendu"];
 
 const NAV_ITEMS = [
-  { icon: "◈", label: "Dashboard",    id: "dashboard",  path: "/dashboard-artiste" },
-  { icon: "🖼", label: "Mes Œuvres",  id: "oeuvres",    path: "/mes-oeuvres" },
-  { icon: "🏛", label: "Mes Chambres",id: "chambre",    path: "/mes-chambres" },
-  { icon: "📊", label: "Statistiques",id: "stats",      path: "/dashboard-artiste" },
-  { icon: "✦", label: "Assistant IA", id: "ia",         path: "/dashboard-artiste" },
-  { icon: "⚙", label: "Paramètres",  id: "settings",   path: "/dashboard-artiste" },
+  { icon: "dashboard", label: "Dashboard",    id: "dashboard",  path: "/dashboard-artiste" },
+  { icon: "oeuvres",   label: "Mes Œuvres",  id: "oeuvres",    path: "/mes-oeuvres" },
+  { icon: "chambres",  label: "Mes Chambres",id: "chambre",    path: "/mes-chambres" },
+  { icon: "stats",     label: "Statistiques",id: "stats",      path: "/dashboard-artiste" },
+  { icon: "assistant", label: "Assistant IA", id: "ia",         path: "/dashboard-artiste" },
+  { icon: "settings",  label: "Paramètres",  id: "settings",   path: "/dashboard-artiste" },
 ];
 
 // ─── Custom Scrollbar ──────────────────────────────────────────────────────────
@@ -118,6 +265,19 @@ function CustomScrollbar() {
 
 function Sidebar() {
   const navigate = useNavigate();
+  
+  const renderIcon = (iconName) => {
+    switch(iconName) {
+      case "dashboard": return <Icons.Dashboard />;
+      case "oeuvres": return <Icons.Oeuvres />;
+      case "chambres": return <Icons.Chambres />;
+      case "stats": return <Icons.Stats />;
+      case "assistant": return <Icons.AssistantIA />;
+      case "settings": return <Icons.Settings />;
+      default: return null;
+    }
+  };
+  
   return (
     <aside className="mo-sidebar">
       <div className="mo-sidebar__logo">
@@ -139,7 +299,7 @@ function Sidebar() {
             className={`mo-nav-item ${item.id === "oeuvres" ? "mo-nav-item--active" : ""}`}
             onClick={() => navigate(item.path)}
           >
-            <span className="mo-nav-icon">{item.icon}</span>
+            <span className="mo-nav-icon">{renderIcon(item.icon)}</span>
             <span className="mo-nav-label">{item.label}</span>
             {item.id === "oeuvres" && <span className="mo-nav-indicator" />}
           </button>
@@ -224,7 +384,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
             <h2 className="mo-modal__title">{isEdit ? "Modifier l'œuvre" : "Ajouter une œuvre"}</h2>
             <p className="mo-modal__sub">{isEdit ? "Mettez à jour les informations de votre création" : "Ajoutez une nouvelle création à votre galerie"}</p>
           </div>
-          <button className="mo-modal__close" onClick={onClose}>✕</button>
+          <button className="mo-modal__close" onClick={onClose}><Icons.Close /></button>
         </div>
 
         <div className="mo-modal__body">
@@ -243,12 +403,12 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               <>
                 <img src={form.imgPreview} alt="preview" className="mo-upload-zone__preview" />
                 <button className="mo-upload-zone__change" onClick={e => { e.stopPropagation(); fileRef.current?.click(); }}>
-                  🖼 Changer l'image
+                  <Icons.ChangeImage /> Changer l'image
                 </button>
               </>
             ) : (
               <>
-                <span className="mo-upload-zone__icon">🖼</span>
+                <span className="mo-upload-zone__icon"><Icons.ImageUpload /></span>
                 <p className="mo-upload-zone__text">Glissez votre image ici ou <span className="mo-upload-zone__link">parcourez</span></p>
                 <p className="mo-upload-zone__hint">PNG, JPG, WEBP — Max 10 Mo</p>
               </>
@@ -360,7 +520,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
                 <input className="mo-input" style={{ flex: 1 }} placeholder="Ex: Impressionnisme"
                   value={tagInput} onChange={e => setTagInput(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addTag())} />
-                <button className="mo-tag-add" onClick={addTag} type="button">+ Ajouter</button>
+                <button className="mo-tag-add" onClick={addTag} type="button"><Icons.TagAdd /> Ajouter</button>
               </div>
               {form.tags.length > 0 && (
                 <div className="mo-tags-wrap">
@@ -407,7 +567,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
         <div className="mo-modal__footer">
           <button className="mo-btn mo-btn--ghost" onClick={onClose}>Annuler</button>
           <button className="mo-btn mo-btn--primary mo-btn--save" onClick={handleSave}>
-            {isEdit ? "✦ Mettre à jour" : "✦ Publier l'œuvre"}
+            <Icons.Save /> {isEdit ? "Mettre à jour" : "Publier l'œuvre"}
           </button>
         </div>
       </div>
@@ -422,7 +582,7 @@ export default function MesOeuvres() {
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("Tous");
   const [filtreGalerie, setFiltreGalerie] = useState("Tous");
-  const [view, setView] = useState("grid"); // grid | list
+  const [view, setView] = useState("grid");
   const [showModal, setShowModal] = useState(false);
   const [editOeuvre, setEditOeuvre] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -464,11 +624,21 @@ export default function MesOeuvres() {
       o.description.toLowerCase().includes(search.toLowerCase()));
 
   const kpis = [
-    { icon: "🖼", label: "Total œuvres", val: oeuvres.length, color: "#8B2020" },
-    { icon: "✅", label: "Publiées", val: oeuvres.filter(o => o.statut === "Publié").length, color: "#3A6B35" },
-    { icon: "📝", label: "Brouillons", val: oeuvres.filter(o => o.statut === "Brouillon").length, color: "#C9A040" },
-    { icon: "💰", label: "Vendues", val: oeuvres.filter(o => o.statut === "Vendu").length, color: "#2C4A8B" },
+    { icon: "oeuvres", label: "Total œuvres", val: oeuvres.length, color: "#8B2020" },
+    { icon: "published", label: "Publiées", val: oeuvres.filter(o => o.statut === "Publié").length, color: "#3A6B35" },
+    { icon: "draft", label: "Brouillons", val: oeuvres.filter(o => o.statut === "Brouillon").length, color: "#C9A040" },
+    { icon: "sold", label: "Vendues", val: oeuvres.filter(o => o.statut === "Vendu").length, color: "#2C4A8B" },
   ];
+
+  const renderKpiIcon = (iconName) => {
+    switch(iconName) {
+      case "oeuvres": return <Icons.Oeuvres />;
+      case "published": return <Icons.Grid />;
+      case "draft": return <Icons.Edit />;
+      case "sold": return <Icons.Package />;
+      default: return null;
+    }
+  };
 
   return (
     <div className="mo-root">
@@ -494,7 +664,7 @@ export default function MesOeuvres() {
         <div className="mo-kpis">
           {kpis.map((k, i) => (
             <div key={i} className="mo-kpi">
-              <span className="mo-kpi__icon">{k.icon}</span>
+              <span className="mo-kpi__icon">{renderKpiIcon(k.icon)}</span>
               <p className="mo-kpi__val" style={{ color: k.color }}>{k.val}</p>
               <p className="mo-kpi__lbl">{k.label}</p>
             </div>
@@ -505,7 +675,7 @@ export default function MesOeuvres() {
         <div className="mo-toolbar">
           <div className="mo-toolbar__left">
             <div className="mo-search-wrap">
-              <span className="mo-search-icon">🔍</span>
+              <span className="mo-search-icon"><Icons.Search /></span>
               <input className="mo-search" placeholder="Rechercher une œuvre…"
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
@@ -520,9 +690,9 @@ export default function MesOeuvres() {
           </div>
           <div className="mo-view-toggle">
             <button className={`mo-view-btn ${view === "grid" ? "mo-view-btn--active" : ""}`}
-              onClick={() => setView("grid")}>⊞</button>
+              onClick={() => setView("grid")}><Icons.Grid /></button>
             <button className={`mo-view-btn ${view === "list" ? "mo-view-btn--active" : ""}`}
-              onClick={() => setView("list")}>☰</button>
+              onClick={() => setView("list")}><Icons.List /></button>
           </div>
         </div>
 
@@ -530,7 +700,7 @@ export default function MesOeuvres() {
         <div className={`mo-grid ${view === "list" ? "mo-grid--list" : ""}`}>
           {filtered.length === 0 ? (
             <div className="mo-empty">
-              <span className="mo-empty__icon">🎨</span>
+              <span className="mo-empty__icon"><Icons.EmptyArt /></span>
               <h2 className="mo-empty__title">Aucune œuvre trouvée</h2>
               <p className="mo-empty__sub">Commencez à enrichir votre galerie en ajoutant votre première création.</p>
               <button className="mo-btn mo-btn--primary" onClick={openAdd}>+ Ajouter ma première œuvre</button>
@@ -544,9 +714,9 @@ export default function MesOeuvres() {
 
                 <div className="mo-card__actions-top">
                   <button className="mo-card__action-btn mo-card__action-btn--edit"
-                    onClick={() => openEdit(o)} title="Modifier">✏</button>
+                    onClick={() => openEdit(o)} title="Modifier"><Icons.Edit /></button>
                   <button className="mo-card__action-btn mo-card__action-btn--del"
-                    onClick={() => setDeleteTarget(o)} title="Supprimer">🗑</button>
+                    onClick={() => setDeleteTarget(o)} title="Supprimer"><Icons.Trash /></button>
                 </div>
 
                 <div className="mo-card__img-wrap">
@@ -560,9 +730,9 @@ export default function MesOeuvres() {
                   <h3 className="mo-card__title">{o.titre}</h3>
                   <p className="mo-card__desc">{o.description}</p>
                   <div className="mo-card__meta">
-                    {o.dimensions && <span className="mo-card__meta-item">📐 {o.dimensions}</span>}
-                    <span className="mo-card__meta-item">📦 {o.nbExemplaires} ex.</span>
-                    <span className="mo-card__meta-item">📅 {new Date(o.dateRealisation).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" })}</span>
+                    {o.dimensions && <span className="mo-card__meta-item"><Icons.Ruler /> {o.dimensions}</span>}
+                    <span className="mo-card__meta-item"><Icons.Package /> {o.nbExemplaires} ex.</span>
+                    <span className="mo-card__meta-item"><Icons.Calendar /> {new Date(o.dateRealisation).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" })}</span>
                   </div>
                 </div>
 
@@ -589,7 +759,7 @@ export default function MesOeuvres() {
       {deleteTarget && (
         <div className="mo-modal-backdrop" onClick={() => setDeleteTarget(null)}>
           <div className="mo-confirm" onClick={e => e.stopPropagation()}>
-            <span className="mo-confirm__icon">🗑</span>
+            <span className="mo-confirm__icon"><Icons.Warning /></span>
             <h2 className="mo-confirm__title">Supprimer cette œuvre ?</h2>
             <p className="mo-confirm__sub">
               <strong>"{deleteTarget.titre}"</strong> sera supprimée définitivement de votre galerie.

@@ -4,7 +4,7 @@ import {
   User, AtSign, Mail, Lock, Calendar,
   MapPin, Phone, ChevronLeft, ChevronRight,
 } from "lucide-react";
-import '../styles/InscriptionUser.css';
+import '../../styles/InscriptionUser.css';
 
 // =============== CONSTANTES ===============
 const IMG = {

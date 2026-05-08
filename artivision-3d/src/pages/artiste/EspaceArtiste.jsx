@@ -1,7 +1,150 @@
 import { useState, useEffect, useRef } from "react";
-import Header from "../components/Headerartiste";
-import Footer from "../components/Footer";
-import "../styles/EspaceArtiste.css";
+import Header from "../../components/Headerartiste";
+import Footer from "../../components/Footer";
+import "../../styles/EspaceArtiste.css";
+
+// ─── SVG Icon Components ───────────────────────────────────────────────────────
+
+const Icon = {
+  Palette: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+    </svg>
+  ),
+  Frame: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="1"/>
+      <rect x="7" y="7" width="10" height="10"/>
+    </svg>
+  ),
+  Eye: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  Star: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+      fill="currentColor" stroke="none">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+  ),
+  Building: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+    </svg>
+  ),
+  BarChart: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/>
+      <line x1="12" y1="20" x2="12" y2="4"/>
+      <line x1="6" y1="20" x2="6" y2="14"/>
+    </svg>
+  ),
+  Bot: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="10" rx="2"/>
+      <circle cx="12" cy="5" r="2"/><path d="M12 7v4"/>
+      <line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+    </svg>
+  ),
+  ShoppingCart: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+  ),
+  Target: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+    </svg>
+  ),
+  MessageSquare: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  ),
+  DollarSign: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/>
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+    </svg>
+  ),
+  Sparkle: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M12 2l1.8 5.4L19.2 9l-5.4 1.8L12 16.2l-1.8-5.4L4.8 9l5.4-1.8L12 2z"/>
+      <path d="M19 15l.9 2.7 2.7.9-2.7.9L19 22l-.9-2.7-2.7-.9 2.7-.9L19 15z"/>
+      <path d="M5 15l.6 1.8 1.8.6-1.8.6L5 19.8l-.6-1.8-1.8-.6 1.8-.6L5 15z"/>
+    </svg>
+  ),
+  Check: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  ),
+  Close: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  Send: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/>
+      <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  ),
+  ChevronLeft: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  ),
+  ChevronRight: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  ),
+  Users: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  Home: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+};
+
+const IC = ({ name, size = 18, style = {}, className = "" }) => {
+  const Comp = Icon[name];
+  if (!Comp) return null;
+  return <Comp width={size} height={size} style={style} className={className} />;
+};
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -24,45 +167,45 @@ const heroSlides = [
 ];
 
 const stats = [
-  { value: "55+",   label: "Artistes actifs",    icon: "🎨" },
-  { value: "150+",  label: "Œuvres exposées",    icon: "🖼️" },
-  { value: "3 200", label: "Visiteurs / mois",   icon: "👁️" },
-  { value: "92%",   label: "Taux de satisfaction", icon: "⭐" },
+  { value: "55+",   label: "Artistes actifs",      iconName: "Palette" },
+  { value: "150+",  label: "Œuvres exposées",      iconName: "Frame"   },
+  { value: "3 200", label: "Visiteurs / mois",     iconName: "Eye"     },
+  { value: "92%",   label: "Taux de satisfaction", iconName: "Star"    },
 ];
 
 const offres = [
   {
-    icon: "🏛",
+    iconName: "Building",
     titre: "Espace d'Exposition 3D",
     desc: "Créez une galerie virtuelle immersive personnalisée. Vos visiteurs explorent vos œuvres comme dans un vrai musée.",
     color: "#8B2020",
   },
   {
-    icon: "📊",
+    iconName: "BarChart",
     titre: "Dashboard Analytique",
     desc: "Suivez vos visites, ventes, temps d'observation et revenus en temps réel avec des graphiques détaillés.",
     color: "#C9A040",
   },
   {
-    icon: "🤖",
+    iconName: "Bot",
     titre: "Assistant IA Muse",
     desc: "Un chatbot intelligent répond à vos questions sur vos performances et vous guide pour optimiser vos ventes.",
     color: "#5C4A30",
   },
   {
-    icon: "🛒",
+    iconName: "ShoppingCart",
     titre: "Vente Intégrée",
     desc: "Vos œuvres sont achetables directement depuis la galerie. Paiement sécurisé et gestion automatisée.",
     color: "#3A6B35",
   },
   {
-    icon: "🎯",
+    iconName: "Target",
     titre: "Essai Virtuel",
     desc: "Les acheteurs visualisent vos œuvres dans leur intérieur avant d'acheter — moins d'hésitations, plus de ventes.",
     color: "#2C4A8B",
   },
   {
-    icon: "💬",
+    iconName: "MessageSquare",
     titre: "Chatbot par Œuvre",
     desc: "Chaque tableau dispose d'un assistant IA qui répond aux questions des visiteurs en votre absence.",
     color: "#7B3F8B",
@@ -73,7 +216,7 @@ const chambres = [
   {
     nom: "Atelier",
     prix: "29 DT / mois",
-    icon: "🎨",
+    iconName: "Palette",
     color: "#F1D3C0",
     accent: "#8B2020",
     desc: "Idéal pour débuter. Exposez jusqu'à 10 œuvres dans un espace intimiste.",
@@ -89,7 +232,7 @@ const chambres = [
   {
     nom: "Galerie",
     prix: "69 DT / mois",
-    icon: "🏛",
+    iconName: "Building",
     color: "#2C0A0A",
     accent: "#C9A040",
     desc: "Pour les artistes confirmés. Un espace grand format avec outils avancés.",
@@ -106,7 +249,7 @@ const chambres = [
   {
     nom: "Musée",
     prix: "149 DT / mois",
-    icon: "✦",
+    iconName: "Sparkle",
     color: "#3A1A0A",
     accent: "#F5D98B",
     desc: "L'expérience ultime. Votre propre musée virtuel avec toutes les fonctionnalités premium.",
@@ -152,6 +295,13 @@ const etapes = [
   { num: "02", titre: "Choisissez votre espace", desc: "Sélectionnez la formule qui correspond à vos ambitions." },
   { num: "03", titre: "Ajoutez vos œuvres", desc: "Téléversez images HD, descriptions et prix en quelques clics." },
   { num: "04", titre: "Accueillez vos visiteurs", desc: "Votre galerie 3D est en ligne. Les revenus arrivent automatiquement." },
+];
+
+const dashboardItems = [
+  { iconName: "Frame",      titre: "Gestion des Œuvres",        desc: "Ajoutez, modifiez, organisez vos créations par collections. Mise en ligne instantanée.",                color: "#8B2020" },
+  { iconName: "BarChart",   titre: "Statistiques Détaillées",    desc: "Visites, conversions, revenus, carte de chaleur — tout en un seul endroit.",                           color: "#C9A040" },
+  { iconName: "DollarSign", titre: "Suivi des Revenus",          desc: "Droits d'entrée, ventes directes, commissions. Transparence totale sur vos gains.",                    color: "#3A6B35" },
+  { iconName: "Bot",        titre: "Assistant IA Personnel",     desc: "Posez vos questions à Muse IA : performances, prix optimal, recommandations.",                        color: "#2C4A8B" },
 ];
 
 // ─── Scrollbar ────────────────────────────────────────────────────────────────
@@ -230,7 +380,10 @@ function HeroCarousel() {
       </div>
       <div className="ea-hero__overlay" />
       <div className="ea-hero__content">
-        <p className="ea-hero__eyebrow">✦ Espace Artiste</p>
+        <p className="ea-hero__eyebrow">
+          <IC name="Sparkle" size={12} style={{ marginRight: 6 }} />
+          Espace Artiste
+        </p>
         <h1 className="ea-hero__title">{heroSlides[current].label}</h1>
         <p className="ea-hero__sub">{heroSlides[current].sub}</p>
         <div className="ea-hero__actions">
@@ -238,8 +391,12 @@ function HeroCarousel() {
           <a href="#offres" className="ea-btn ea-btn--ghost">Découvrir les offres</a>
         </div>
       </div>
-      <button className="ea-hero__arrow ea-hero__arrow--left" onClick={prev}>‹</button>
-      <button className="ea-hero__arrow ea-hero__arrow--right" onClick={next}>›</button>
+      <button className="ea-hero__arrow ea-hero__arrow--left" onClick={prev}>
+        <IC name="ChevronLeft" size={20} />
+      </button>
+      <button className="ea-hero__arrow ea-hero__arrow--right" onClick={next}>
+        <IC name="ChevronRight" size={20} />
+      </button>
       <div className="ea-hero__dots">
         {heroSlides.map((_, i) => (
           <button key={i} className={`ea-hero__dot ${i === current ? "ea-hero__dot--active" : ""}`}
@@ -256,7 +413,9 @@ function Stars({ n }) {
   return (
     <div className="ea-stars">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={i < n ? "ea-star ea-star--on" : "ea-star"}>★</span>
+        <span key={i} className={i < n ? "ea-star ea-star--on" : "ea-star"}>
+          <IC name="Star" size={14} />
+        </span>
       ))}
     </div>
   );
@@ -265,7 +424,7 @@ function Stars({ n }) {
 // ─── Chatbot ─────────────────────────────────────────────────────────────────
 
 const initMessages = [
-  { role: "assistant", text: "Bonjour ! Je suis Muse IA 🎨 Comment puis-je vous aider à rejoindre ARTIVISION ?" },
+  { role: "assistant", text: "Bonjour ! Je suis Muse IA. Comment puis-je vous aider à rejoindre ARTIVISION ?" },
 ];
 
 const quickReplies = [
@@ -326,7 +485,7 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
       {/* FAB */}
       {!open && (
         <button className="ea-fab" onClick={() => setOpen(true)}>
-          <span className="ea-fab__icon">✦</span>
+          <span className="ea-fab__icon"><IC name="Sparkle" size={16} /></span>
           <span>Muse IA</span>
         </button>
       )}
@@ -335,25 +494,29 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
       {open && (
         <div className="ea-chat">
           <div className="ea-chat__header">
-            <div className="ea-chat__avatar">✦</div>
+            <div className="ea-chat__avatar"><IC name="Sparkle" size={18} /></div>
             <div>
               <p className="ea-chat__name">Muse IA</p>
               <p className="ea-chat__sub">Assistant ARTIVISION</p>
             </div>
             <div className="ea-chat__online" />
-            <button className="ea-chat__close" onClick={() => setOpen(false)}>✕</button>
+            <button className="ea-chat__close" onClick={() => setOpen(false)}>
+              <IC name="Close" size={14} />
+            </button>
           </div>
 
           <div className="ea-chat__messages">
             {messages.map((m, i) => (
               <div key={i} className={`ea-chat__msg ea-chat__msg--${m.role}`}>
-                {m.role === "assistant" && <span className="ea-chat__icon">✦</span>}
+                {m.role === "assistant" && (
+                  <span className="ea-chat__icon"><IC name="Sparkle" size={14} /></span>
+                )}
                 <div className="ea-chat__bubble">{m.text}</div>
               </div>
             ))}
             {loading && (
               <div className="ea-chat__msg ea-chat__msg--assistant">
-                <span className="ea-chat__icon">✦</span>
+                <span className="ea-chat__icon"><IC name="Sparkle" size={14} /></span>
                 <div className="ea-chat__bubble ea-chat__bubble--typing">
                   <span /><span /><span />
                 </div>
@@ -373,7 +536,9 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === "Enter" && send(input)} disabled={loading} />
             <button className="ea-chat__send" onClick={() => send(input)}
-              disabled={loading || !input.trim()}>›</button>
+              disabled={loading || !input.trim()}>
+              <IC name="Send" size={15} />
+            </button>
           </div>
         </div>
       )}
@@ -404,7 +569,7 @@ export default function EspaceArtiste() {
           <div className="ea-stats__inner">
             {stats.map((s, i) => (
               <div key={i} className="ea-stat-card">
-                <span className="ea-stat-icon">{s.icon}</span>
+                <span className="ea-stat-icon"><IC name={s.iconName} size={22} /></span>
                 <span className="ea-stat-value">{s.value}</span>
                 <span className="ea-stat-label">{s.label}</span>
               </div>
@@ -423,7 +588,7 @@ export default function EspaceArtiste() {
             {offres.map((o, i) => (
               <div key={i} className="ea-offre-card">
                 <div className="ea-offre-icon" style={{ background: `${o.color}15`, color: o.color }}>
-                  {o.icon}
+                  <IC name={o.iconName} size={24} />
                 </div>
                 <h3 className="ea-offre-titre">{o.titre}</h3>
                 <p className="ea-offre-desc">{o.desc}</p>
@@ -479,7 +644,9 @@ export default function EspaceArtiste() {
                   </div>
                 )}
                 <div className="ea-chambre-top" style={{ background: c.color }}>
-                  <span className="ea-chambre-icon" style={{ color: c.accent }}>{c.icon}</span>
+                  <span className="ea-chambre-icon" style={{ color: c.accent }}>
+                    <IC name={c.iconName} size={28} />
+                  </span>
                   <h3 className="ea-chambre-nom" style={{ color: c.accent }}>{c.nom}</h3>
                   <p className="ea-chambre-prix" style={{ color: c.accent }}>{c.prix}</p>
                 </div>
@@ -488,7 +655,9 @@ export default function EspaceArtiste() {
                   <ul className="ea-chambre-features">
                     {c.features.map((f, j) => (
                       <li key={j} className="ea-chambre-feature">
-                        <span className="ea-check" style={{ color: c.accent }}>✓</span> {f}
+                        <span className="ea-check" style={{ color: c.accent }}>
+                          <IC name="Check" size={13} />
+                        </span> {f}
                       </li>
                     ))}
                   </ul>
@@ -510,15 +679,10 @@ export default function EspaceArtiste() {
             <p className="ea-section__sub">Gérez vos œuvres, suivez vos performances et pilotez vos revenus depuis une interface élégante.</p>
           </div>
           <div className="ea-preview__grid">
-            {[
-              { icon: "🖼", titre: "Gestion des Œuvres", desc: "Ajoutez, modifiez, organisez vos créations par collections. Mise en ligne instantanée.", color: "#8B2020" },
-              { icon: "📊", titre: "Statistiques Détaillées", desc: "Visites, conversions, revenus, carte de chaleur — tout en un seul endroit.", color: "#C9A040" },
-              { icon: "💰", titre: "Suivi des Revenus", desc: "Droits d'entrée, ventes directes, commissions. Transparence totale sur vos gains.", color: "#3A6B35" },
-              { icon: "🤖", titre: "Assistant IA Personnel", desc: "Posez vos questions à Muse IA : performances, prix optimal, recommandations.", color: "#2C4A8B" },
-            ].map((p, i) => (
+            {dashboardItems.map((p, i) => (
               <div key={i} className="ea-preview-card">
                 <div className="ea-preview-icon" style={{ color: p.color, background: `${p.color}12` }}>
-                  {p.icon}
+                  <IC name={p.iconName} size={22} />
                 </div>
                 <h3 className="ea-preview-titre">{p.titre}</h3>
                 <p className="ea-preview-desc">{p.desc}</p>

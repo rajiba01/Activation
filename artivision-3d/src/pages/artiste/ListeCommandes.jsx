@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import Header from "../components/Headerartiste";
-import Footer from "../components/Footer";
-import "../styles/ListeCommandes.css";
+import Header from "../../components/Headerartiste";
+import Footer from "../../components/Footer";
+import "../../styles/ListeCommandes.css";
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 const COMMANDES_INIT = [
@@ -74,9 +74,9 @@ function CustomScrollbar() {
 // ─── Statut Badge ─────────────────────────────────────────────────────────────
 function StatutBadge({ statut }) {
   const map = {
-    "Livré":      { cls: "lc-badge--livre",    icon: "✓" },
-    "En attente": { cls: "lc-badge--attente",  icon: "⏳" },
-    "Prêt":       { cls: "lc-badge--pret",     icon: "◉" },
+    "Livré":      { cls: "lc-badge--livre",    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> },
+    "En attente": { cls: "lc-badge--attente",  icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> },
+    "Prêt":       { cls: "lc-badge--pret",     icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg> },
   };
   const { cls, icon } = map[statut] || {};
   return (
@@ -103,7 +103,11 @@ function Toggle({ value, onChange }) {
 function Toast({ msg, visible }) {
   return (
     <div className={`lc-toast ${visible ? "lc-toast--visible" : ""}`}>
-      <span className="lc-toast__icon">✦</span> {msg}
+      <span className="lc-toast__icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
+        </svg>
+      </span> {msg}
     </div>
   );
 }
@@ -176,15 +180,15 @@ export default function ListeCommandes() {
 
   // ── KPIs ──
   const kpis = [
-    { label: "Total commandes",  value: commandes.length,                              color: "#8B2020", icon: "📋" },
-    { label: "En attente",       value: commandes.filter(c => c.statut === "En attente").length, color: "#C9A040", icon: "⏳" },
-    { label: "Prêtes",           value: commandes.filter(c => c.statut === "Prêt").length,       color: "#2C4A8B", icon: "◉"  },
-    { label: "Livrées",          value: commandes.filter(c => c.statut === "Livré").length,      color: "#3A6B35", icon: "✓"  },
+    { label: "Total commandes",  value: commandes.length,                              color: "#8B2020", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="9" y1="15" x2="15" y2="15"/></svg> },
+    { label: "En attente",       value: commandes.filter(c => c.statut === "En attente").length, color: "#C9A040", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
+    { label: "Prêtes",           value: commandes.filter(c => c.statut === "Prêt").length,       color: "#2C4A8B", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> },
+    { label: "Livrées",          value: commandes.filter(c => c.statut === "Livré").length,      color: "#3A6B35", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> },
   ];
 
   const SortIcon = ({ col }) => {
-    if (sortCol !== col) return <span className="lc-sort-icon lc-sort-icon--inactive">⇅</span>;
-    return <span className="lc-sort-icon lc-sort-icon--active">{sortDir === "asc" ? "↑" : "↓"}</span>;
+    if (sortCol !== col) return <span className="lc-sort-icon lc-sort-icon--inactive"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 10l5-5 5 5M17 14l-5 5-5-5"/></svg></span>;
+    return <span className="lc-sort-icon lc-sort-icon--active">{sortDir === "asc" ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M19 12l-7-7-7 7"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19V5M5 12l7 7 7-7"/></svg>}</span>;
   };
 
   return (
@@ -197,7 +201,12 @@ export default function ListeCommandes() {
         <div className="lc-hero">
           <div className="lc-hero__bg" />
           <div className="lc-hero__content">
-            <p className="lc-hero__eyebrow">✦ Espace Artiste</p>
+            <p className="lc-hero__eyebrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}>
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
+              </svg>
+              Espace Artiste
+            </p>
             <h1 className="lc-hero__title">Liste des Commandes</h1>
             <p className="lc-hero__sub">Gérez et suivez toutes les commandes de vos œuvres en temps réel</p>
           </div>
@@ -235,7 +244,9 @@ export default function ListeCommandes() {
                 onChange={e => setSearch(e.target.value)}
               />
               {search && (
-                <button className="lc-search-clear" onClick={() => setSearch("")}>✕</button>
+                <button className="lc-search-clear" onClick={() => setSearch("")}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               )}
             </div>
 
@@ -261,7 +272,11 @@ export default function ListeCommandes() {
           <div className="lc-table-wrap">
             {paginated.length === 0 ? (
               <div className="lc-empty">
-                <span className="lc-empty__icon">🔍</span>
+                <span className="lc-empty__icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
                 <p>Aucune commande trouvée</p>
               </div>
             ) : (
@@ -335,7 +350,11 @@ export default function ListeCommandes() {
                           disabled={!c.codeOn}
                           title="Envoyer le code de vérification"
                         >
-                          <span>📨</span> Envoyer Code
+                          <span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                          </span> Envoyer Code
                         </button>
                         <button
                           className={`lc-action-btn lc-action-btn--confirm ${c.confirmed ? "lc-action-btn--done" : ""}`}
@@ -343,7 +362,12 @@ export default function ListeCommandes() {
                           disabled={c.confirmed}
                           title={c.confirmed ? "Déjà confirmée" : "Confirmer la livraison"}
                         >
-                          <span>{c.confirmed ? "✓" : "◎"}</span>
+                          <span>
+                            {c.confirmed ? 
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg> :
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>
+                            }
+                          </span>
                           {c.confirmed ? "Confirmé" : "Confirmer"}
                         </button>
                       </td>
@@ -363,7 +387,7 @@ export default function ListeCommandes() {
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
               >
-                ‹
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
 
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
@@ -381,7 +405,7 @@ export default function ListeCommandes() {
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
               >
-                ›
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
 
               <span className="lc-pagination__info">

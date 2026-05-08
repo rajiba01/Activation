@@ -1,6 +1,88 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/DashboardArtiste.css";
+import "../../styles/DashboardArtiste.css";
+
+// ─── Icônes SVG ────────────────────────────────────────────────────────────────
+
+const Icons = {
+  eye: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  artwork: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9" cy="10" r="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 19L8 13L12 17L22 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  revenue: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  conversion: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 20V10M12 20V4M6 20V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M3 7L12 4L21 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  artworksIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+      <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  gallery: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9L12 15L21 9L12 3L3 9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5 12V18L12 22L19 18V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  stats: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12V18C21 19.1 20.1 20 19 20H5C3.9 20 3 19.1 3 18V6C3 4.9 3.9 4 5 4H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15 9L21 3M21 3H16.5M21 3V7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  ai: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L15.5 9.5L23 11L17 16.5L18.5 24L12 20L5.5 24L7 16.5L1 11L8.5 9.5L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  settings: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2"/>
+      <path d="M19.4 15C19.2 15.6 18.9 16.2 18.5 16.7L19.5 18.3L18.3 19.5L16.7 18.5C16.2 18.9 15.6 19.2 15 19.4L14.5 21H9.5L9 19.4C8.4 19.2 7.8 18.9 7.3 18.5L5.7 19.5L4.5 18.3L5.5 16.7C5.1 16.2 4.8 15.6 4.6 15L3 14.5V9.5L4.6 9C4.8 8.4 5.1 7.8 5.5 7.3L4.5 5.7L5.7 4.5L7.3 5.5C7.8 5.1 8.4 4.8 9 4.6L9.5 3H14.5L15 4.6C15.6 4.8 16.2 5.1 16.7 5.5L18.3 4.5L19.5 5.7L18.5 7.3C18.9 7.8 19.2 8.4 19.4 9L21 9.5V14.5L19.4 15Z" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  museLogo: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z" fill="currentColor"/>
+    </svg>
+  ),
+  dashboardIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+      <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  close: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  send: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+};
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -13,10 +95,10 @@ const artistInfo = {
 };
 
 const kpiData = [
-  { label: "Total Visites", value: "3 842", delta: "+12%", icon: "👁", color: "#8B2020" },
-  { label: "Œuvres Exposées", value: "24", delta: "+3", icon: "🖼", color: "#C9A040" },
-  { label: "Revenus du mois", value: "4 200 DT", delta: "+8%", icon: "💰", color: "#3A6B35" },
-  { label: "Taux Conversion", value: "18.4%", delta: "+2.1%", icon: "📈", color: "#2C4A8B" },
+  { label: "Total Visites", value: "3 842", delta: "+12%", icon: "eye", color: "#8B2020" },
+  { label: "Œuvres Exposées", value: "24", delta: "+3", icon: "artwork", color: "#C9A040" },
+  { label: "Revenus du mois", value: "4 200 DT", delta: "+8%", icon: "revenue", color: "#3A6B35" },
+  { label: "Taux Conversion", value: "18.4%", delta: "+2.1%", icon: "conversion", color: "#2C4A8B" },
 ];
 
 const visitsMonthly = [320, 410, 390, 520, 480, 610, 570, 720, 680, 810, 760, 920];
@@ -298,7 +380,9 @@ Réponds de façon concise, chaleureuse et professionnelle.`,
   return (
     <div className="chatbot-panel">
       <div className="chatbot-header">
-        <div className="chatbot-avatar">✦</div>
+        <div className="chatbot-avatar">
+          <Icons.museLogo />
+        </div>
         <div>
           <p className="chatbot-name">Muse IA</p>
           <p className="chatbot-sub">Votre assistant artistique</p>
@@ -309,13 +393,13 @@ Réponds de façon concise, chaleureuse et professionnelle.`,
       <div className="chatbot-messages">
         {messages.map((m, i) => (
           <div key={i} className={`chat-msg chat-msg--${m.role}`}>
-            {m.role === "assistant" && <span className="chat-icon">✦</span>}
+            {m.role === "assistant" && <span className="chat-icon"><Icons.museLogo /></span>}
             <div className="chat-bubble">{m.text}</div>
           </div>
         ))}
         {loading && (
           <div className="chat-msg chat-msg--assistant">
-            <span className="chat-icon">✦</span>
+            <span className="chat-icon"><Icons.museLogo /></span>
             <div className="chat-bubble chat-bubble--typing">
               <span /><span /><span />
             </div>
@@ -340,7 +424,7 @@ Réponds de façon concise, chaleureuse et professionnelle.`,
           disabled={loading}
         />
         <button className="chatbot-send" onClick={() => send(input)} disabled={loading || !input.trim()}>
-          ›
+          <Icons.send />
         </button>
       </div>
     </div>
@@ -350,19 +434,19 @@ Réponds de façon concise, chaleureuse et professionnelle.`,
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
 const navItems = [
-  { icon: "◈", label: "Dashboard", id: "dashboard" },
-  { icon: "🖼", label: "Mes Œuvres", id: "oeuvres" },
-  { icon: "🏛", label: "Ma Chambre", id: "chambre" },
-  { icon: "📊", label: "Statistiques", id: "stats" },
-  { icon: "✦", label: "Assistant IA", id: "ia" },
-  { icon: "⚙", label: "Paramètres", id: "settings" },
+  { icon: "dashboardIcon", label: "Dashboard", id: "dashboard" },
+  { icon: "artworksIcon", label: "Mes Œuvres", id: "oeuvres" },
+  { icon: "gallery", label: "Ma Chambre", id: "chambre" },
+  { icon: "stats", label: "Statistiques", id: "stats" },
+  { icon: "ai", label: "Assistant IA", id: "ia" },
+  { icon: "settings", label: "Paramètres", id: "settings" },
 ];
 
 function Sidebar({ active, setActive }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <span className="logo-mark">✦</span>
+        <span className="logo-mark"><Icons.museLogo /></span>
         <span className="logo-text">ARTIVISION</span>
       </div>
 
@@ -381,7 +465,9 @@ function Sidebar({ active, setActive }) {
             className={`nav-item ${active === item.id ? "nav-item--active" : ""}`}
             onClick={() => setActive(item.id)}
           >
-            <span className="nav-icon">{item.icon}</span>
+            <span className="nav-icon">
+              {Icons[item.icon] && Icons[item.icon]()}
+            </span>
             <span className="nav-label">{item.label}</span>
             {active === item.id && <span className="nav-indicator" />}
           </button>
@@ -407,6 +493,11 @@ export default function DashboardArtiste() {
   const [period, setPeriod] = useState("mois");
   const [showChat, setShowChat] = useState(false);
 
+  const getIconComponent = (iconName) => {
+    const IconComponent = Icons[iconName];
+    return IconComponent ? <IconComponent /> : null;
+  };
+
   return (
     <div className="dashboard-root">
       <Sidebar active={activeNav} setActive={setActiveNav} />
@@ -427,7 +518,7 @@ export default function DashboardArtiste() {
               ))}
             </div>
             <button className="chat-toggle-btn" onClick={() => setShowChat(!showChat)}>
-              ✦ Muse IA
+              <Icons.ai /> Muse IA
             </button>
           </div>
         </header>
@@ -437,7 +528,9 @@ export default function DashboardArtiste() {
           {kpiData.map((k, i) => (
             <div key={i} className="kpi-card">
               <div className="kpi-top">
-                <span className="kpi-icon">{k.icon}</span>
+                <span className="kpi-icon">
+                  {Icons[k.icon] && Icons[k.icon]()}
+                </span>
                 <span className="kpi-delta" style={{ color: k.delta.startsWith("+") ? "#3A6B35" : "#8B2020" }}>
                   {k.delta}
                 </span>
@@ -527,7 +620,9 @@ export default function DashboardArtiste() {
       {/* ── Floating Chatbot ── */}
       {showChat && (
         <div className="chat-overlay">
-          <button className="chat-close" onClick={() => setShowChat(false)}>✕</button>
+          <button className="chat-close" onClick={() => setShowChat(false)}>
+            <Icons.close />
+          </button>
           <ChatbotPanel />
         </div>
       )}
@@ -535,7 +630,7 @@ export default function DashboardArtiste() {
       {/* ── Floating Chat Button ── */}
       {!showChat && (
         <button className="chat-fab" onClick={() => setShowChat(true)}>
-          <span className="fab-icon">✦</span>
+          <span className="fab-icon"><Icons.museLogo /></span>
           <span className="fab-label">Muse IA</span>
         </button>
       )}

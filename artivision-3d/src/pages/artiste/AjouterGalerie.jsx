@@ -1,7 +1,63 @@
 import { useState, useRef } from "react";
-import Header from "../components/Headerartiste";
-import Footer from "../components/Footer";
-import "../styles/AjouterGalerie.css";
+import Header from "../../components/Headerartiste";
+import Footer from "../../components/Footer";
+import "../../styles/AjouterGalerie.css";
+
+// ─── Icônes SVG ────────────────────────────────────────────────────────────────
+
+const Icons = {
+  location: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  image: () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="3" width="20" height="18" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9" cy="10" r="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2 19L8 13L12 17L22 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  artwork: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="2"/>
+      <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  lightbulb: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9 18H15M9 18C9 20 10 22 12 22C14 22 15 20 15 18M9 18V16C6.5 14.5 5 11.5 5 9C5 5.5 8 2 12 2C16 2 19 5.5 19 9C19 11.5 17.5 14.5 15 16V18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  clipboard: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 4H18C19.1 4 20 4.9 20 6V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V6C4 4.9 4.9 4 6 4H8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="8" y="2" width="8" height="4" rx="1" stroke="currentColor" strokeWidth="2"/>
+    </svg>
+  ),
+  check: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  star: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L15.5 9.5L23 11L17 16.5L18.5 24L12 20L5.5 24L7 16.5L1 11L8.5 9.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1"/>
+    </svg>
+  ),
+  success: () => (
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+      <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  arrowDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+};
 
 // ─── Décors disponibles ───────────────────────────────────────────────────────
 const decors = [
@@ -111,7 +167,7 @@ function StepIndicator({ current, steps }) {
       {steps.map((s, i) => (
         <div key={i} className={`ag-step ${i < current ? "ag-step--done" : ""} ${i === current ? "ag-step--active" : ""}`}>
           <div className="ag-step__circle">
-            {i < current ? "✓" : i + 1}
+            {i < current ? <Icons.check /> : i + 1}
           </div>
           <span className="ag-step__label">{s}</span>
           {i < steps.length - 1 && <div className="ag-step__line" />}
@@ -204,7 +260,7 @@ export default function AjouterGalerie() {
         <Header />
         <main className="ag-page">
           <div className="ag-success">
-            <div className="ag-success__icon">✦</div>
+            <div className="ag-success__icon"><Icons.star /></div>
             <h2 className="ag-success__title">Galerie créée avec succès !</h2>
             <p className="ag-success__sub">
               Votre galerie <strong>"{form.nom}"</strong> a été soumise pour validation.<br />
@@ -241,7 +297,7 @@ export default function AjouterGalerie() {
         <div className="ag-hero">
           <div className="ag-hero__bg" />
           <div className="ag-hero__content">
-            <p className="ag-hero__eyebrow">✦ Espace Artiste</p>
+            <p className="ag-hero__eyebrow"><Icons.star /> Espace Artiste</p>
             <h1 className="ag-hero__title">Ajouter une Galerie</h1>
             <p className="ag-hero__sub">Créez votre espace d'exposition virtuel en 3D en quelques étapes</p>
           </div>
@@ -283,7 +339,7 @@ export default function AjouterGalerie() {
                   <div className="ag-field">
                     <label className="ag-label">Localisation <span className="ag-required">*</span></label>
                     <div className="ag-input-icon-wrap">
-                      <span className="ag-input-icon">📍</span>
+                      <span className="ag-input-icon"><Icons.location /></span>
                       <input
                         className={`ag-input ag-input--icon ${errors.localisation ? "ag-input--error" : ""}`}
                         placeholder="Ex: Paris, France"
@@ -388,7 +444,7 @@ export default function AjouterGalerie() {
                           <img src={d.img} alt={d.label} className="ag-decor-img" />
                           <div className="ag-decor-overlay" />
                           {form.decor === d.id && (
-                            <div className="ag-decor-check">✓</div>
+                            <div className="ag-decor-check"><Icons.check /></div>
                           )}
                         </div>
                         <div className="ag-decor-info">
@@ -416,7 +472,7 @@ export default function AjouterGalerie() {
                     }}
                   >
                     <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={handleImages} />
-                    <div className="ag-upload-icon">🖼</div>
+                    <div className="ag-upload-icon"><Icons.image /></div>
                     <p className="ag-upload-text">Glissez vos images ici ou <span className="ag-upload-link">cliquez pour parcourir</span></p>
                     <p className="ag-upload-hint">PNG, JPG, WEBP • Max 10 Mo par image</p>
                   </div>
@@ -470,7 +526,7 @@ export default function AjouterGalerie() {
                     <label className="ag-label">Nombre max d'œuvres <span className="ag-required">*</span></label>
                     <p className="ag-field-hint">Capacité d'exposition de votre galerie</p>
                     <div className="ag-input-icon-wrap">
-                      <span className="ag-input-icon">🖼</span>
+                      <span className="ag-input-icon"><Icons.artwork /></span>
                       <input
                         type="number" min="1"
                         className={`ag-input ag-input--icon ${errors.nbOeuvres ? "ag-input--error" : ""}`}
@@ -499,7 +555,7 @@ export default function AjouterGalerie() {
                         <option value="7j">7 jours</option>
                         <option value="illimité">Accès illimité</option>
                       </select>
-                      <span className="ag-select-arrow">▾</span>
+                      <span className="ag-select-arrow"><Icons.arrowDown /></span>
                     </div>
                     {errors.duree && <span className="ag-error">{errors.duree}</span>}
                   </div>
@@ -525,7 +581,7 @@ export default function AjouterGalerie() {
                 {/* Récap financier */}
                 {form.tarif && form.prixVisiteur && form.nbOeuvres && (
                   <div className="ag-recap-finance">
-                    <p className="ag-recap-finance__title">✦ Estimation financière</p>
+                    <p className="ag-recap-finance__title"><Icons.star /> Estimation financière</p>
                     <div className="ag-recap-finance__grid">
                       <div className="ag-recap-finance__item">
                         <span>Coût mensuel</span>
@@ -561,7 +617,7 @@ export default function AjouterGalerie() {
                   </button>
                 ) : (
                   <button className="ag-btn ag-btn--gold" onClick={handleSubmit}>
-                    ✦ Créer la galerie
+                    <Icons.star /> Créer la galerie
                   </button>
                 )}
               </div>
@@ -572,7 +628,7 @@ export default function AjouterGalerie() {
           {/* Sidebar info */}
           <aside className="ag-sidebar">
             <div className="ag-info-card">
-              <div className="ag-info-card__icon">💡</div>
+              <div className="ag-info-card__icon"><Icons.lightbulb /></div>
               <h3 className="ag-info-card__title">Conseils</h3>
               {step === 0 && (
                 <ul className="ag-info-list">
@@ -605,7 +661,7 @@ export default function AjouterGalerie() {
             </div>
 
             <div className="ag-info-card ag-info-card--dark">
-              <div className="ag-info-card__icon">📋</div>
+              <div className="ag-info-card__icon"><Icons.clipboard /></div>
               <h3 className="ag-info-card__title">Récapitulatif</h3>
               <div className="ag-recap-mini">
                 <div className="ag-recap-mini__row">
