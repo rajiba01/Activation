@@ -5,6 +5,8 @@ import {
   MapPin, Phone, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import '../../styles/InscriptionUser.css';
+import { useNavigate } from "react-router-dom"; // NOUVEAU
+import { authService } from "../../services/LoginService"; // NOUVEAU
 
 // =============== CONSTANTES ===============
 const IMG = {
@@ -106,7 +108,7 @@ function FieldIcon({ icon: Icon }) {
 function SocialIcon({ name }) {
   const icons = {
     instagram: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="20" height="20">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} width="20" height="20">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <circle cx="12" cy="12" r="4.5" />
         <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
@@ -179,6 +181,8 @@ function ArtisticPreferences({ selected, onToggle }) {
 
 // =============== PAGE PRINCIPALE ===============
 export default function InscriptionUser() {
+  const navigate = useNavigate(); // NOUVEAU
+
   // États du formulaire
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
@@ -215,14 +219,47 @@ export default function InscriptionUser() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // CAS DU LOGIN
+    if (view === "login") {
+      try {
+        const data = await authService.login({ 
+          username: username.trim(), 
+          password: password.trim() 
+        });
+        
+        if (data.access || data.token) {
+          localStorage.setItem("token", data.access || data.token);
+          navigate("/user-page");
+        } else if (data.status === "success" && data.data) {
+          localStorage.setItem("token", data.data.access);
+          navigate("/user-page");
+        }
+      } catch (err) {
+        alert("Erreur de connexion: " + (err.message || JSON.stringify(err.errors || err)));
+      }
+      return;
+    }
+
+    // CAS DE L'INSCRIPTION
     if (view === "register" && step === 2) {
-      console.log("Inscription utilisateur:", {
-        nom, prenom, username, email, password,
-        dateNaissance, ville, telephone, selectedPreferences
-      });
-      alert("Inscription réussie !");
+      try {
+        const payload = {
+          nom: nom,
+          prenom: prenom,
+          pseudo: username, // ou 'username' selon ce que demande l'API
+          email: email,
+          mdp: password,    // ou 'password' selon ce que demande l'API
+          preferences: selectedPreferences
+        };
+        await authService.registerUser(payload);
+        alert("Inscription réussie !");
+        switchView("login");
+      } catch (err) {
+        alert("Erreur: " + JSON.stringify(err.errors || err));
+      }
     }
   };
 
@@ -287,12 +324,26 @@ export default function InscriptionUser() {
                 <>
                   <h2 className="av-parch-title">Connectez-vous</h2>
                   <div className="av-field-wrap">
-                    <FieldIcon icon={Mail} />
-                    <input className="av-field-input" type="email" placeholder="Email ou username" />
+                    <FieldIcon icon={User} />
+                    <input 
+                      className="av-field-input" 
+                      type="text" 
+                      placeholder="Nom d'utilisateur" 
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="av-field-wrap">
                     <FieldIcon icon={Lock} />
-                    <input className="av-field-input" type="password" placeholder="Mot de passe" />
+                    <input 
+                      className="av-field-input" 
+                      type="password" 
+                      placeholder="Mot de passe" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
                   </div>
                   <button type="submit" className="av-submit-btn">Se connecter</button>
                   <p className="av-switch-link">

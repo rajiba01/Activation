@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Mesoeuvres.css";
+import { galerieService } from "../../services/GalerieService";
 
 // ─── SVG Icons ──────────────────────────────────────────────────────────────
 
@@ -361,17 +362,54 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
+
+    // Préparer payload local pour UI
     const galerie = galeries.find(g => g.id === form.galerieId);
-    onSave({
+    const localItem = {
       ...form,
       id: isEdit ? oeuvre.id : `o${Date.now()}`,
       galerieName: galerie?.nom || "",
       prix: parseFloat(form.prix),
       nbExemplaires: parseInt(form.nbExemplaires) || 1,
       img: form.imgPreview || oeuvre?.img || "",
-    });
+    };
+
+    // Si édition locale seulement -> onSave directement
+    if (isEdit) {
+      onSave(localItem);
+      return;
+    }
+
+    // Envoi au backend (FormData pour inclure l'image)
+    try {
+      const fd = new FormData();
+      fd.append("galerie", form.galerieId);
+      fd.append("titre", form.titre);
+      fd.append("description", form.description || "");
+      fd.append("prix", form.prix || "");
+      fd.append("date_realisation", form.dateRealisation || "");
+      fd.append("technique", form.technique || "");
+      fd.append("dimensions", form.dimensions || "");
+      fd.append("nb_exemplaires", form.nbExemplaires || "1");
+      fd.append("statut", form.statut || "Publié");
+      fd.append("informations_complementaires", form.informationsComplementaires || "");
+      // tags en JSON si le backend attend une liste
+      fd.append("tags", JSON.stringify(form.tags || []));
+      if (form.img && form.img instanceof File) {
+        fd.append("image", form.img); // nom du champ 'image' à adapter selon votre serializer
+      }
+
+      const created = await galerieService.createOeuvreMultipart(fd);
+      // Utiliser la réponse du backend si fournie, sinon fallback au localItem
+      const saved = created && created.id ? created : localItem;
+      onSave(saved);
+      showToast("✓ Œuvre publiée avec succès");
+    } catch (err) {
+      console.error("Erreur publication œuvre:", err);
+      showToast("Erreur lors de la publication. Vérifiez la console.");
+    }
   };
 
   return (
@@ -578,7 +616,8 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function MesOeuvres() {
-  const [oeuvres, setOeuvres] = useState(OEUVRES_INIT);
+  const [oeuvres, setOeuvres] = useState(OEUVRES_INIT); // Vous ferez de même pour les œuvres ensuite
+  const [galeries, setGaleries] = useState([]); // <-- NOUVEAU STATUT POUR LES GALERIES
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("Tous");
   const [filtreGalerie, setFiltreGalerie] = useState("Tous");
@@ -587,6 +626,30 @@ export default function MesOeuvres() {
   const [editOeuvre, setEditOeuvre] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState({ msg: "", show: false });
+
+  // <-- NOUVEAU: useEffect pour récupérer les galeries de l'artiste depuis l'API
+  useEffect(() => {
+    const fetchGaleries = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://127.0.0.1:8000/api/galerie/galeries/", {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setGaleries(data);
+        } else {
+          console.error("Erreur serveur lors de la récupération des galeries");
+        }
+      } catch (err) {
+        console.error("Erreur réseau: ", err);
+      }
+    };
+
+    fetchGaleries();
+  }, []);
 
   const showToast = (msg) => {
     setToast({ msg, show: true });
@@ -614,7 +677,7 @@ export default function MesOeuvres() {
   const openAdd = () => { setEditOeuvre(null); setShowModal(true); };
   const openEdit = (o) => { setEditOeuvre(o); setShowModal(true); };
 
-  const galeries = GALERIES_ARTISTE;
+  // SUPPRIMEZ cette ligne : const galeries = GALERIES_ARTISTE;
   const galerieOptions = ["Tous", ...galeries.map(g => g.nom)];
 
   const filtered = oeuvres
@@ -720,8 +783,15 @@ export default function MesOeuvres() {
                 </div>
 
                 <div className="mo-card__img-wrap">
-                  <img src={o.img} alt={o.titre} className="mo-card__img"
-                    onError={e => { e.target.src = `https://picsum.photos/400/280?random=${idx + 1}`; }} />
+                  {/* CHANGEMENT ICI : Gère o.image, o.img, et les chemins relatifs Django */}
+                  <img 
+                    src={(o.image || o.img)?.startsWith("/media/") 
+                      ? `http://127.0.0.1:8000${o.image || o.img}` 
+                      : (o.image || o.img)} 
+                    alt={o.titre} 
+                    className="mo-card__img"
+                    onError={e => { e.target.src = `https://picsum.photos/400/280?random=${idx + 1}`; }} 
+                  />
                   <div className="mo-card__galerie-tag">{o.galerieName}</div>
                 </div>
 
