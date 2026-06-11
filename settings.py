@@ -98,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'artivision',         
         'USER': 'postgres',           
-        'PASSWORD': 'postgre',      
+        'PASSWORD': 'admin123',      
         'HOST': 'localhost',        
         'PORT': '5432',             
     }
@@ -148,3 +148,7 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+LANGUAGE_CODE = 'fr-fr'
+TIME_ZONE = 'Africa/Tunis'
+USE_I18N = True
+USE_TZ = True
