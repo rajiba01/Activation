@@ -1,10 +1,11 @@
+// src/pages/artiste/AjouterGalerie.jsx
 import { useState, useRef } from "react";
 import Header from "../../components/Headerartiste";
 import Footer from "../../components/Footer";
+import { useArtisteStore } from "../../store/useArtisteStore";
 import "../../styles/AjouterGalerie.css";
 
 // ─── Icônes SVG ────────────────────────────────────────────────────────────────
-
 const Icons = {
   location: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -46,12 +47,6 @@ const Icons = {
       <path d="M12 2L15.5 9.5L23 11L17 16.5L18.5 24L12 20L5.5 24L7 16.5L1 11L8.5 9.5L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1"/>
     </svg>
   ),
-  success: () => (
-    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-      <path d="M8 12L11 15L16 9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  ),
   arrowDown: () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -61,9 +56,9 @@ const Icons = {
 
 // ─── Décors disponibles ───────────────────────────────────────────────────────
 const decors = [
-  { id: "classique", label: "Classique",    img: "/images/galerie/g1.jpg", desc: "Murs blancs, éclairage neutre" },
-  { id: "moderne",   label: "Moderne",      img: "/images/galerie/g2.jpg", desc: "Design épuré, lignes droites" },
-  { id: "baroque",   label: "Baroque",      img: "/images/galerie/g3.jpg", desc: "Ornements dorés, ambiance royale" },
+  { id: "classique", label: "Classique",    img: "/images/galerie/g1.jpg", desc: "Murs blancs, éclairage neutre", wallColor: "#F5ECD7" },
+  { id: "moderne",   label: "Moderne",      img: "/images/galerie/g2.jpg", desc: "Design épuré, lignes droites", wallColor: "#D0CCCC" },
+  { id: "baroque",   label: "Baroque",      img: "/images/galerie/g3.jpg", desc: "Ornements dorés, ambiance royale", wallColor: "#3A0808" },
 ];
 
 // ─── Scrollbar ────────────────────────────────────────────────────────────────
@@ -136,13 +131,8 @@ function SurfaceVisualizer({ x, y }) {
         >
           <span className="ag-surface-label">{xNum > 0 && yNum > 0 ? `${xNum}m × ${yNum}m` : ""}</span>
         </div>
-        {/* Axes */}
-        <div className="ag-surface-axis ag-surface-axis--x">
-          <span>X</span>
-        </div>
-        <div className="ag-surface-axis ag-surface-axis--y">
-          <span>Y</span>
-        </div>
+        <div className="ag-surface-axis ag-surface-axis--x"><span>X</span></div>
+        <div className="ag-surface-axis ag-surface-axis--y"><span>Y</span></div>
       </div>
       <div className="ag-surface-info">
         <div className="ag-surface-stat">
@@ -151,9 +141,7 @@ function SurfaceVisualizer({ x, y }) {
         </div>
         <div className="ag-surface-stat">
           <span className="ag-surface-stat-label">Capacité estimée</span>
-          <span className="ag-surface-stat-value">
-            {xNum && yNum ? `${Math.floor(xNum * yNum / 4)} œuvres` : "—"}
-          </span>
+          <span className="ag-surface-stat-value">{xNum && yNum ? `${Math.floor(xNum * yNum / 4)} œuvres` : "—"}</span>
         </div>
       </div>
     </div>
@@ -166,9 +154,7 @@ function StepIndicator({ current, steps }) {
     <div className="ag-steps">
       {steps.map((s, i) => (
         <div key={i} className={`ag-step ${i < current ? "ag-step--done" : ""} ${i === current ? "ag-step--active" : ""}`}>
-          <div className="ag-step__circle">
-            {i < current ? <Icons.check /> : i + 1}
-          </div>
+          <div className="ag-step__circle">{i < current ? <Icons.check /> : i + 1}</div>
           <span className="ag-step__label">{s}</span>
           {i < steps.length - 1 && <div className="ag-step__line" />}
         </div>
@@ -181,6 +167,9 @@ function StepIndicator({ current, steps }) {
 export default function AjouterGalerie() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  
+  // Récupérer la fonction ajouterChambre depuis le store
+  const ajouterChambre = useArtisteStore((state) => state.ajouterChambre);
 
   const [form, setForm] = useState({
     nom: "",
@@ -201,12 +190,11 @@ export default function AjouterGalerie() {
 
   const steps = ["Informations", "Dimensions", "Décor & Images", "Tarification"];
 
-  const set = (key, val) => {
+  const setField = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: "" }));
   };
 
-  // ── Validation par étape ──
   const validate = () => {
     const errs = {};
     if (step === 0) {
@@ -215,22 +203,17 @@ export default function AjouterGalerie() {
       if (!form.description.trim())  errs.description = "La description est requise";
     }
     if (step === 1) {
-      if (!form.surfaceX || isNaN(form.surfaceX) || +form.surfaceX <= 0)
-        errs.surfaceX = "Valeur invalide";
-      if (!form.surfaceY || isNaN(form.surfaceY) || +form.surfaceY <= 0)
-        errs.surfaceY = "Valeur invalide";
+      if (!form.surfaceX || isNaN(form.surfaceX) || +form.surfaceX <= 0) errs.surfaceX = "Valeur invalide";
+      if (!form.surfaceY || isNaN(form.surfaceY) || +form.surfaceY <= 0) errs.surfaceY = "Valeur invalide";
     }
     if (step === 2) {
       if (!form.decor) errs.decor = "Choisissez un décor";
     }
     if (step === 3) {
-      if (!form.tarif || isNaN(form.tarif) || +form.tarif <= 0)
-        errs.tarif = "Tarif invalide";
-      if (!form.nbOeuvres || isNaN(form.nbOeuvres) || +form.nbOeuvres <= 0)
-        errs.nbOeuvres = "Nombre invalide";
-      if (!form.duree)       errs.duree = "Choisissez une durée";
-      if (!form.prixVisiteur || isNaN(form.prixVisiteur) || +form.prixVisiteur <= 0)
-        errs.prixVisiteur = "Prix invalide";
+      if (!form.tarif || isNaN(form.tarif) || +form.tarif <= 0) errs.tarif = "Tarif invalide";
+      if (!form.nbOeuvres || isNaN(form.nbOeuvres) || +form.nbOeuvres <= 0) errs.nbOeuvres = "Nombre invalide";
+      if (!form.duree) errs.duree = "Choisissez une durée";
+      if (!form.prixVisiteur || isNaN(form.prixVisiteur) || +form.prixVisiteur <= 0) errs.prixVisiteur = "Prix invalide";
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -249,11 +232,42 @@ export default function AjouterGalerie() {
     setForm(f => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
   };
 
+  // ─── VALIDATION FINALE ET AJOUT DANS LE STORE ───
   const handleSubmit = () => {
-    if (validate()) setSubmitted(true);
+    if (!validate()) return;
+    
+    // Récupérer le décor sélectionné
+    const selectedDecor = decors.find(d => d.id === form.decor);
+    
+    // Créer l'objet chambre pour le store
+    const nouvelleChambre = {
+      nom: form.nom,
+      description: form.description,
+      localisation: form.localisation,
+      surface: `${form.surfaceX} × ${form.surfaceY} m`,
+      decor: form.decor,
+      prixEntree: parseFloat(form.prixVisiteur),
+      dureeAcces: form.duree,
+      nbOeuvresMax: parseInt(form.nbOeuvres),
+      tarifMensuel: parseFloat(form.tarif),
+      dateCreation: new Date().toISOString().split("T")[0],
+      nbVisiteursTotal: 0,
+      revenus: 0,
+      // Pour la 3D
+      width: parseFloat(form.surfaceX),
+      depth: parseFloat(form.surfaceY),
+      wallColor: selectedDecor?.wallColor || "#F5ECD7",
+      headerVariant: form.decor === "classique" ? "burg" : form.decor === "baroque" ? "gold" : "green",
+    };
+    
+    // Ajouter au store Zustand
+    ajouterChambre(nouvelleChambre);
+    
+    // Afficher l'écran de succès
+    setSubmitted(true);
   };
 
-  // ── Success screen ──
+  // ─── Success screen ──
   if (submitted) {
     return (
       <>
@@ -263,8 +277,8 @@ export default function AjouterGalerie() {
             <div className="ag-success__icon"><Icons.star /></div>
             <h2 className="ag-success__title">Galerie créée avec succès !</h2>
             <p className="ag-success__sub">
-              Votre galerie <strong>"{form.nom}"</strong> a été soumise pour validation.<br />
-              Notre équipe l'examinera sous 24h.
+              Votre galerie <strong>"{form.nom}"</strong> a été ajoutée à votre espace.<br />
+              Vous pouvez maintenant ajouter des œuvres.
             </p>
             <div className="ag-success__recap">
               <div className="ag-recap-row"><span>Surface</span><span>{form.surfaceX} × {form.surfaceY} m²</span></div>
@@ -274,10 +288,8 @@ export default function AjouterGalerie() {
               <div className="ag-recap-row"><span>Prix visiteur</span><span>{form.prixVisiteur} DT</span></div>
             </div>
             <div className="ag-success__actions">
-              <a href="/dashboard-artiste" className="ag-btn ag-btn--primary">Voir mon dashboard</a>
-              <button className="ag-btn ag-btn--ghost" onClick={() => { setSubmitted(false); setStep(0); setForm({ nom:"",surfaceX:"",surfaceY:"",localisation:"",description:"",decor:"",tarif:"",nbOeuvres:"",duree:"",prixVisiteur:"",images:[] }); }}>
-                Ajouter une autre galerie
-              </button>
+              <a href="/mes-chambres" className="ag-btn ag-btn--primary">Voir mes galeries</a>
+              <a href="/mes-oeuvres" className="ag-btn ag-btn--ghost">Ajouter des œuvres</a>
             </div>
           </div>
         </main>
@@ -290,10 +302,7 @@ export default function AjouterGalerie() {
   return (
     <>
       <Header />
-
       <main className="ag-page">
-
-        {/* ── Page Header ── */}
         <div className="ag-hero">
           <div className="ag-hero__bg" />
           <div className="ag-hero__content">
@@ -303,15 +312,11 @@ export default function AjouterGalerie() {
           </div>
         </div>
 
-        {/* ── Form Container ── */}
         <div className="ag-container">
-
-          {/* Step Indicator */}
           <StepIndicator current={step} steps={steps} />
-
           <div className="ag-form-card">
 
-            {/* ══ STEP 0 — Informations ══ */}
+            {/* STEP 0 — Informations */}
             {step === 0 && (
               <div className="ag-form-step">
                 <div className="ag-form-step__header">
@@ -321,45 +326,29 @@ export default function AjouterGalerie() {
                     <p className="ag-form-step__sub">Décrivez votre galerie pour attirer les visiteurs</p>
                   </div>
                 </div>
-
                 <div className="ag-fields">
-                  {/* Nom */}
                   <div className="ag-field">
                     <label className="ag-label">Nom de la galerie <span className="ag-required">*</span></label>
-                    <input
-                      className={`ag-input ${errors.nom ? "ag-input--error" : ""}`}
+                    <input className={`ag-input ${errors.nom ? "ag-input--error" : ""}`}
                       placeholder="Ex: Galerie des Lumières"
-                      value={form.nom}
-                      onChange={e => set("nom", e.target.value)}
-                    />
+                      value={form.nom} onChange={e => setField("nom", e.target.value)} />
                     {errors.nom && <span className="ag-error">{errors.nom}</span>}
                   </div>
-
-                  {/* Localisation */}
                   <div className="ag-field">
                     <label className="ag-label">Localisation <span className="ag-required">*</span></label>
                     <div className="ag-input-icon-wrap">
                       <span className="ag-input-icon"><Icons.location /></span>
-                      <input
-                        className={`ag-input ag-input--icon ${errors.localisation ? "ag-input--error" : ""}`}
+                      <input className={`ag-input ag-input--icon ${errors.localisation ? "ag-input--error" : ""}`}
                         placeholder="Ex: Paris, France"
-                        value={form.localisation}
-                        onChange={e => set("localisation", e.target.value)}
-                      />
+                        value={form.localisation} onChange={e => setField("localisation", e.target.value)} />
                     </div>
                     {errors.localisation && <span className="ag-error">{errors.localisation}</span>}
                   </div>
-
-                  {/* Description */}
                   <div className="ag-field">
                     <label className="ag-label">Description <span className="ag-required">*</span></label>
-                    <textarea
-                      className={`ag-textarea ${errors.description ? "ag-input--error" : ""}`}
+                    <textarea className={`ag-textarea ${errors.description ? "ag-input--error" : ""}`}
                       placeholder="Décrivez l'ambiance, le thème et les œuvres exposées dans votre galerie…"
-                      rows={5}
-                      value={form.description}
-                      onChange={e => set("description", e.target.value)}
-                    />
+                      rows={5} value={form.description} onChange={e => setField("description", e.target.value)} />
                     <div className="ag-char-count">{form.description.length} / 500</div>
                     {errors.description && <span className="ag-error">{errors.description}</span>}
                   </div>
@@ -367,7 +356,7 @@ export default function AjouterGalerie() {
               </div>
             )}
 
-            {/* ══ STEP 1 — Dimensions ══ */}
+            {/* STEP 1 — Dimensions */}
             {step === 1 && (
               <div className="ag-form-step">
                 <div className="ag-form-step__header">
@@ -377,49 +366,38 @@ export default function AjouterGalerie() {
                     <p className="ag-form-step__sub">Définissez la surface de votre galerie virtuelle</p>
                   </div>
                 </div>
-
                 <div className="ag-dimensions-layout">
                   <div className="ag-fields ag-fields--inline">
                     <div className="ag-field">
                       <label className="ag-label">Largeur X (mètres) <span className="ag-required">*</span></label>
                       <div className="ag-input-icon-wrap">
                         <span className="ag-input-icon ag-input-icon--unit">m</span>
-                        <input
-                          type="number" min="1" max="200"
+                        <input type="number" min="1" max="200"
                           className={`ag-input ag-input--icon ${errors.surfaceX ? "ag-input--error" : ""}`}
-                          placeholder="Ex: 20"
-                          value={form.surfaceX}
-                          onChange={e => set("surfaceX", e.target.value)}
-                        />
+                          placeholder="Ex: 20" value={form.surfaceX}
+                          onChange={e => setField("surfaceX", e.target.value)} />
                       </div>
                       {errors.surfaceX && <span className="ag-error">{errors.surfaceX}</span>}
                     </div>
-
                     <div className="ag-dim-separator">×</div>
-
                     <div className="ag-field">
                       <label className="ag-label">Longueur Y (mètres) <span className="ag-required">*</span></label>
                       <div className="ag-input-icon-wrap">
                         <span className="ag-input-icon ag-input-icon--unit">m</span>
-                        <input
-                          type="number" min="1" max="200"
+                        <input type="number" min="1" max="200"
                           className={`ag-input ag-input--icon ${errors.surfaceY ? "ag-input--error" : ""}`}
-                          placeholder="Ex: 30"
-                          value={form.surfaceY}
-                          onChange={e => set("surfaceY", e.target.value)}
-                        />
+                          placeholder="Ex: 30" value={form.surfaceY}
+                          onChange={e => setField("surfaceY", e.target.value)} />
                       </div>
                       {errors.surfaceY && <span className="ag-error">{errors.surfaceY}</span>}
                     </div>
                   </div>
-
-                  {/* Visualizer */}
                   <SurfaceVisualizer x={form.surfaceX} y={form.surfaceY} />
                 </div>
               </div>
             )}
 
-            {/* ══ STEP 2 — Décor & Images ══ */}
+            {/* STEP 2 — Décor & Images */}
             {step === 2 && (
               <div className="ag-form-step">
                 <div className="ag-form-step__header">
@@ -429,23 +407,17 @@ export default function AjouterGalerie() {
                     <p className="ag-form-step__sub">Choisissez l'ambiance visuelle de votre galerie</p>
                   </div>
                 </div>
-
-                {/* Décor selector */}
                 <div className="ag-field ag-field--wide">
                   <label className="ag-label">Type de décor <span className="ag-required">*</span></label>
                   <div className="ag-decor-grid">
                     {decors.map(d => (
-                      <div
-                        key={d.id}
+                      <div key={d.id}
                         className={`ag-decor-card ${form.decor === d.id ? "ag-decor-card--selected" : ""}`}
-                        onClick={() => set("decor", d.id)}
-                      >
+                        onClick={() => setField("decor", d.id)}>
                         <div className="ag-decor-img-wrap">
                           <img src={d.img} alt={d.label} className="ag-decor-img" />
                           <div className="ag-decor-overlay" />
-                          {form.decor === d.id && (
-                            <div className="ag-decor-check"><Icons.check /></div>
-                          )}
+                          {form.decor === d.id && <div className="ag-decor-check"><Icons.check /></div>}
                         </div>
                         <div className="ag-decor-info">
                           <p className="ag-decor-label">{d.label}</p>
@@ -456,27 +428,21 @@ export default function AjouterGalerie() {
                   </div>
                   {errors.decor && <span className="ag-error">{errors.decor}</span>}
                 </div>
-
-                {/* Upload images */}
                 <div className="ag-field ag-field--wide">
                   <label className="ag-label">Images de votre galerie</label>
-                  <div
-                    className="ag-upload-zone"
-                    onClick={() => fileRef.current?.click()}
+                  <div className="ag-upload-zone" onClick={() => fileRef.current?.click()}
                     onDragOver={e => e.preventDefault()}
                     onDrop={e => {
                       e.preventDefault();
                       const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
                       const previews = files.map(f => ({ file: f, url: URL.createObjectURL(f), name: f.name }));
                       setForm(f => ({ ...f, images: [...f.images, ...previews] }));
-                    }}
-                  >
+                    }}>
                     <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={handleImages} />
                     <div className="ag-upload-icon"><Icons.image /></div>
                     <p className="ag-upload-text">Glissez vos images ici ou <span className="ag-upload-link">cliquez pour parcourir</span></p>
                     <p className="ag-upload-hint">PNG, JPG, WEBP • Max 10 Mo par image</p>
                   </div>
-
                   {form.images.length > 0 && (
                     <div className="ag-image-previews">
                       {form.images.map((img, i) => (
@@ -491,7 +457,7 @@ export default function AjouterGalerie() {
               </div>
             )}
 
-            {/* ══ STEP 3 — Tarification ══ */}
+            {/* STEP 3 — Tarification */}
             {step === 3 && (
               <div className="ag-form-step">
                 <div className="ag-form-step__header">
@@ -501,53 +467,37 @@ export default function AjouterGalerie() {
                     <p className="ag-form-step__sub">Configurez les conditions d'accès à votre galerie</p>
                   </div>
                 </div>
-
                 <div className="ag-fields ag-fields--2col">
-
-                  {/* Tarif mensuel */}
                   <div className="ag-field">
                     <label className="ag-label">Tarif mensuel (DT) <span className="ag-required">*</span></label>
                     <p className="ag-field-hint">Coût de location de l'espace pour vous</p>
                     <div className="ag-input-icon-wrap">
                       <span className="ag-input-icon ag-input-icon--unit">DT</span>
-                      <input
-                        type="number" min="0"
+                      <input type="number" min="0"
                         className={`ag-input ag-input--icon ${errors.tarif ? "ag-input--error" : ""}`}
-                        placeholder="Ex: 69"
-                        value={form.tarif}
-                        onChange={e => set("tarif", e.target.value)}
-                      />
+                        placeholder="Ex: 69" value={form.tarif}
+                        onChange={e => setField("tarif", e.target.value)} />
                     </div>
                     {errors.tarif && <span className="ag-error">{errors.tarif}</span>}
                   </div>
-
-                  {/* Nb œuvres */}
                   <div className="ag-field">
                     <label className="ag-label">Nombre max d'œuvres <span className="ag-required">*</span></label>
                     <p className="ag-field-hint">Capacité d'exposition de votre galerie</p>
                     <div className="ag-input-icon-wrap">
                       <span className="ag-input-icon"><Icons.artwork /></span>
-                      <input
-                        type="number" min="1"
+                      <input type="number" min="1"
                         className={`ag-input ag-input--icon ${errors.nbOeuvres ? "ag-input--error" : ""}`}
-                        placeholder="Ex: 30"
-                        value={form.nbOeuvres}
-                        onChange={e => set("nbOeuvres", e.target.value)}
-                      />
+                        placeholder="Ex: 30" value={form.nbOeuvres}
+                        onChange={e => setField("nbOeuvres", e.target.value)} />
                     </div>
                     {errors.nbOeuvres && <span className="ag-error">{errors.nbOeuvres}</span>}
                   </div>
-
-                  {/* Durée de location */}
                   <div className="ag-field">
                     <label className="ag-label">Durée d'accès visiteur <span className="ag-required">*</span></label>
                     <p className="ag-field-hint">Durée d'accès après paiement du visiteur</p>
                     <div className="ag-select-wrap">
-                      <select
-                        className={`ag-select ${errors.duree ? "ag-input--error" : ""}`}
-                        value={form.duree}
-                        onChange={e => set("duree", e.target.value)}
-                      >
+                      <select className={`ag-select ${errors.duree ? "ag-input--error" : ""}`}
+                        value={form.duree} onChange={e => setField("duree", e.target.value)}>
                         <option value="">Choisir une durée…</option>
                         <option value="24h">24 heures</option>
                         <option value="48h">48 heures</option>
@@ -559,62 +509,29 @@ export default function AjouterGalerie() {
                     </div>
                     {errors.duree && <span className="ag-error">{errors.duree}</span>}
                   </div>
-
-                  {/* Prix visiteur */}
                   <div className="ag-field">
                     <label className="ag-label">Prix d'entrée visiteur (DT) <span className="ag-required">*</span></label>
                     <p className="ag-field-hint">Montant payé par chaque visiteur</p>
                     <div className="ag-input-icon-wrap">
                       <span className="ag-input-icon ag-input-icon--unit">DT</span>
-                      <input
-                        type="number" min="0" step="0.5"
+                      <input type="number" min="0" step="0.5"
                         className={`ag-input ag-input--icon ${errors.prixVisiteur ? "ag-input--error" : ""}`}
-                        placeholder="Ex: 5"
-                        value={form.prixVisiteur}
-                        onChange={e => set("prixVisiteur", e.target.value)}
-                      />
+                        placeholder="Ex: 5" value={form.prixVisiteur}
+                        onChange={e => setField("prixVisiteur", e.target.value)} />
                     </div>
                     {errors.prixVisiteur && <span className="ag-error">{errors.prixVisiteur}</span>}
                   </div>
                 </div>
-
-                {/* Récap financier */}
-                {form.tarif && form.prixVisiteur && form.nbOeuvres && (
-                  <div className="ag-recap-finance">
-                    <p className="ag-recap-finance__title"><Icons.star /> Estimation financière</p>
-                    <div className="ag-recap-finance__grid">
-                      <div className="ag-recap-finance__item">
-                        <span>Coût mensuel</span>
-                        <strong>{form.tarif} DT</strong>
-                      </div>
-                      <div className="ag-recap-finance__item">
-                        <span>Seuil de rentabilité</span>
-                        <strong>{Math.ceil(form.tarif / form.prixVisiteur)} visiteurs</strong>
-                      </div>
-                      <div className="ag-recap-finance__item ag-recap-finance__item--highlight">
-                        <span>Revenu si galerie pleine</span>
-                        <strong>{(form.prixVisiteur * form.nbOeuvres * 0.7).toFixed(0)} DT / mois*</strong>
-                      </div>
-                    </div>
-                    <p className="ag-recap-finance__note">* Estimation basée sur 70% de taux d'occupation • Commission plateforme incluse</p>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* ── Navigation buttons ── */}
+            {/* Navigation buttons */}
             <div className="ag-form-nav">
-              {step > 0 && (
-                <button className="ag-btn ag-btn--ghost-dark" onClick={prev}>
-                  ← Précédent
-                </button>
-              )}
+              {step > 0 && <button className="ag-btn ag-btn--ghost-dark" onClick={prev}>← Précédent</button>}
               <div className="ag-form-nav__right">
                 <span className="ag-step-counter">Étape {step + 1} / {steps.length}</span>
                 {step < steps.length - 1 ? (
-                  <button className="ag-btn ag-btn--primary" onClick={next}>
-                    Suivant →
-                  </button>
+                  <button className="ag-btn ag-btn--primary" onClick={next}>Suivant →</button>
                 ) : (
                   <button className="ag-btn ag-btn--gold" onClick={handleSubmit}>
                     <Icons.star /> Créer la galerie
@@ -622,7 +539,6 @@ export default function AjouterGalerie() {
                 )}
               </div>
             </div>
-
           </div>
 
           {/* Sidebar info */}
@@ -630,63 +546,14 @@ export default function AjouterGalerie() {
             <div className="ag-info-card">
               <div className="ag-info-card__icon"><Icons.lightbulb /></div>
               <h3 className="ag-info-card__title">Conseils</h3>
-              {step === 0 && (
-                <ul className="ag-info-list">
-                  <li>Choisissez un nom mémorable et évocateur</li>
-                  <li>Une bonne description attire 3× plus de visiteurs</li>
-                  <li>Précisez le thème artistique de votre galerie</li>
-                </ul>
-              )}
-              {step === 1 && (
-                <ul className="ag-info-list">
-                  <li>Une surface de 20×30m est idéale pour débuter</li>
-                  <li>Prévoyez 4m² minimum par œuvre exposée</li>
-                  <li>Les grandes galeries attirent plus de visiteurs</li>
-                </ul>
-              )}
-              {step === 2 && (
-                <ul className="ag-info-list">
-                  <li>Le décor Classique est le plus apprécié des visiteurs</li>
-                  <li>Ajoutez 5-10 images de haute qualité</li>
-                  <li>Les images HD augmentent le taux de conversion</li>
-                </ul>
-              )}
-              {step === 3 && (
-                <ul className="ag-info-list">
-                  <li>Un prix entre 3-8 DT maximise les visites</li>
-                  <li>48h d'accès est la durée la plus populaire</li>
-                  <li>70% des revenus d'entrée vous reviennent</li>
-                </ul>
-              )}
-            </div>
-
-            <div className="ag-info-card ag-info-card--dark">
-              <div className="ag-info-card__icon"><Icons.clipboard /></div>
-              <h3 className="ag-info-card__title">Récapitulatif</h3>
-              <div className="ag-recap-mini">
-                <div className="ag-recap-mini__row">
-                  <span>Nom</span>
-                  <span>{form.nom || "—"}</span>
-                </div>
-                <div className="ag-recap-mini__row">
-                  <span>Surface</span>
-                  <span>{form.surfaceX && form.surfaceY ? `${form.surfaceX}×${form.surfaceY}m` : "—"}</span>
-                </div>
-                <div className="ag-recap-mini__row">
-                  <span>Décor</span>
-                  <span>{decors.find(d => d.id === form.decor)?.label || "—"}</span>
-                </div>
-                <div className="ag-recap-mini__row">
-                  <span>Prix visiteur</span>
-                  <span>{form.prixVisiteur ? `${form.prixVisiteur} DT` : "—"}</span>
-                </div>
-              </div>
+              {step === 0 && <ul className="ag-info-list"><li>Choisissez un nom mémorable et évocateur</li><li>Une bonne description attire 3× plus de visiteurs</li></ul>}
+              {step === 1 && <ul className="ag-info-list"><li>Une surface de 20×30m est idéale pour débuter</li><li>Prévoyez 4m² minimum par œuvre exposée</li></ul>}
+              {step === 2 && <ul className="ag-info-list"><li>Le décor Classique est le plus apprécié des visiteurs</li><li>Ajoutez 5-10 images de haute qualité</li></ul>}
+              {step === 3 && <ul className="ag-info-list"><li>Un prix entre 3-8 DT maximise les visites</li><li>48h d'accès est la durée la plus populaire</li></ul>}
             </div>
           </aside>
-
         </div>
       </main>
-
       <Footer />
       <CustomScrollbar />
     </>

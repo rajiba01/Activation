@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Mesoeuvres.css";
+import { useArtisteStore } from "../../store/useArtisteStore";
 
 // ─── SVG Icons ──────────────────────────────────────────────────────────────
-
 const Icons = {
   Dashboard: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="7" height="7" />
       <rect x="14" y="3" width="7" height="7" />
       <rect x="3" y="14" width="7" height="7" />
@@ -14,27 +14,27 @@ const Icons = {
     </svg>
   ),
   Oeuvres: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="2.5" />
       <path d="M21 15L16 10L5 21" />
     </svg>
   ),
   Chambres: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <path d="M9 22V12h6v10" />
     </svg>
   ),
   Stats: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6" />
       <polyline points="15 3 21 3 21 9" />
       <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   ),
   AssistantIA: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 2a5 5 0 0 0-5 5v5a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z" />
       <path d="M21 12c0 4.97-4.03 9-9 9" />
       <path d="M10 17l-2 2" />
@@ -42,13 +42,13 @@ const Icons = {
     </svg>
   ),
   Settings: () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.07.09A10 10 0 0 0 12 18a10 10 0 0 0 6.18-2.07z" />
     </svg>
   ),
   Search: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="10" cy="10" r="7" />
       <line x1="21" y1="21" x2="14.5" y2="14.5" />
     </svg>
@@ -149,63 +149,13 @@ const Icons = {
   )
 };
 
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
+// ─── Données statiques ─────────────────────────────────────────────────────
 const ARTIST = {
   name: "Ariana Soghra",
   avatar: "https://i.pravatar.cc/80?img=47",
   abonnement: "Premium",
   depuis: "Janvier 2024",
 };
-
-const GALERIES_ARTISTE = [
-  { id: "g1", nom: "Galerie Impressionniste" },
-  { id: "g2", nom: "Lumières de Paris" },
-  { id: "g3", nom: "Abstraction Pure" },
-];
-
-const OEUVRES_INIT = [
-  {
-    id: "o1", galerieId: "g1", galerieName: "Galerie Impressionniste",
-    titre: "Lumière d'Automne", description: "Une exploration de la lumière automnale à travers des touches impressionnistes délicates.",
-    prix: 450, dateRealisation: "2024-09-15", technique: "Huile sur toile",
-    dimensions: "80 × 60 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Impressionnisme", "Automne", "Lumière"],
-    img: "/images/galerie/g1.jpg",
-  },
-  {
-    id: "o2", galerieId: "g1", galerieName: "Galerie Impressionniste",
-    titre: "Reflets Bleutés", description: "Jeu de reflets sur l'eau au coucher du soleil, inspiré des étangs normands.",
-    prix: 280, dateRealisation: "2024-07-20", technique: "Aquarelle",
-    dimensions: "50 × 40 cm", statut: "Publié", nbExemplaires: 3,
-    tags: ["Aquarelle", "Eau", "Coucher de soleil"],
-    img: "/images/galerie/g2.jpg",
-  },
-  {
-    id: "o3", galerieId: "g2", galerieName: "Lumières de Paris",
-    titre: "Portail Doré", description: "La magnificence dorée d'une entrée parisienne, capturée dans ses moindres détails ornementaux.",
-    prix: 720, dateRealisation: "2024-11-03", technique: "Peinture acrylique",
-    dimensions: "100 × 80 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Paris", "Architecture", "Or"],
-    img: "/images/galerie/g3.jpg",
-  },
-  {
-    id: "o4", galerieId: "g3", galerieName: "Abstraction Pure",
-    titre: "Nuit Parisienne", description: "Une nuit parisienne abstraite, entre rêve et réalité, dans des tons profonds de bleu et violet.",
-    prix: 190, dateRealisation: "2024-05-12", technique: "Pastel",
-    dimensions: "40 × 30 cm", statut: "Brouillon", nbExemplaires: 5,
-    tags: ["Nuit", "Abstrait", "Paris"],
-    img: "/images/galerie/g4.jpg",
-  },
-  {
-    id: "o5", galerieId: "g2", galerieName: "Lumières de Paris",
-    titre: "Aube Rosée", description: "Les premières lueurs rosées de l'aube sur les toits de la ville endormie.",
-    prix: 340, dateRealisation: "2024-08-28", technique: "Huile sur toile",
-    dimensions: "70 × 55 cm", statut: "Vendu", nbExemplaires: 1,
-    tags: ["Aube", "Lumière", "Toits"],
-    img: "/images/galerie/g5.jpg",
-  },
-];
 
 const TECHNIQUES = [
   "Huile sur toile", "Aquarelle", "Acrylique", "Pastel", "Dessin au crayon",
@@ -215,16 +165,15 @@ const TECHNIQUES = [
 const STATUTS = ["Tous", "Publié", "Brouillon", "Vendu"];
 
 const NAV_ITEMS = [
-  { icon: "dashboard", label: "Dashboard",    id: "dashboard",  path: "/dashboard-artiste" },
-  { icon: "oeuvres",   label: "Mes Œuvres",  id: "oeuvres",    path: "/mes-oeuvres" },
-  { icon: "chambres",  label: "Mes Chambres",id: "chambre",    path: "/mes-chambres" },
-  { icon: "stats",     label: "Statistiques",id: "stats",      path: "/dashboard-artiste" },
-  { icon: "assistant", label: "Assistant IA", id: "ia",         path: "/dashboard-artiste" },
-  { icon: "settings",  label: "Paramètres",  id: "settings",   path: "/dashboard-artiste" },
+  { icon: "dashboard", label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
+  { icon: "oeuvres", label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
+  { icon: "chambres", label: "Mes Chambres", id: "chambre", path: "/mes-chambres" },
+  { icon: "stats", label: "Statistiques", id: "stats", path: "/dashboard-artiste" },
+  { icon: "assistant", label: "Assistant IA", id: "ia", path: "/dashboard-artiste" },
+  { icon: "settings", label: "Paramètres", id: "settings", path: "/dashboard-artiste" },
 ];
 
-// ─── Custom Scrollbar ──────────────────────────────────────────────────────────
-
+// ─── Custom Scrollbar ──────────────────────────────────────────────────────
 function CustomScrollbar() {
   const thumbRef = useRef(null);
   const isDrag = useRef(false);
@@ -261,8 +210,7 @@ function CustomScrollbar() {
   return <div className="mo-csb-track"><div className="mo-csb-thumb" ref={thumbRef} onMouseDown={onMouseDown} /></div>;
 }
 
-// ─── Sidebar ───────────────────────────────────────────────────────────────────
-
+// ─── Sidebar ────────────────────────────────────────────────────────────────
 function Sidebar() {
   const navigate = useNavigate();
   
@@ -313,8 +261,7 @@ function Sidebar() {
   );
 }
 
-// ─── Add / Edit Modal ──────────────────────────────────────────────────────────
-
+// ─── Add / Edit Modal ──────────────────────────────────────────────────────
 const EMPTY_FORM = {
   galerieId: "", titre: "", description: "",
   prix: "", dateRealisation: "", technique: "",
@@ -324,7 +271,7 @@ const EMPTY_FORM = {
 
 function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
   const isEdit = !!oeuvre;
-  const [form, setForm] = useState(isEdit ? { ...oeuvre, tags: [...oeuvre.tags], imgPreview: oeuvre.img, img: null } : { ...EMPTY_FORM });
+  const [form, setForm] = useState(isEdit ? { ...oeuvre, tags: [...(oeuvre.tags || [])], imgPreview: oeuvre.img, img: null } : { ...EMPTY_FORM });
   const [errors, setErrors] = useState({});
   const [tagInput, setTagInput] = useState("");
   const [dragover, setDragover] = useState(false);
@@ -366,7 +313,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
     const galerie = galeries.find(g => g.id === form.galerieId);
     onSave({
       ...form,
-      id: isEdit ? oeuvre.id : `o${Date.now()}`,
+      id: isEdit ? oeuvre.id : undefined,
       galerieName: galerie?.nom || "",
       prix: parseFloat(form.prix),
       nbExemplaires: parseInt(form.nbExemplaires) || 1,
@@ -377,8 +324,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
   return (
     <div className="mo-modal-backdrop" onClick={onClose}>
       <div className="mo-modal" onClick={e => e.stopPropagation()}>
-
-        {/* Head */}
         <div className="mo-modal__head">
           <div>
             <h2 className="mo-modal__title">{isEdit ? "Modifier l'œuvre" : "Ajouter une œuvre"}</h2>
@@ -388,8 +333,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
         </div>
 
         <div className="mo-modal__body">
-
-          {/* ── Image Upload ── */}
+          {/* Image Upload */}
           <div
             className={`mo-upload-zone ${dragover ? "mo-upload-zone--dragover" : ""}`}
             onClick={() => fileRef.current?.click()}
@@ -397,8 +341,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
             onDragLeave={() => setDragover(false)}
             onDrop={e => { e.preventDefault(); setDragover(false); handleImage(e.dataTransfer.files[0]); }}
           >
-            <input ref={fileRef} type="file" accept="image/*" hidden
-              onChange={e => handleImage(e.target.files[0])} />
+            <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => handleImage(e.target.files[0])} />
             {form.imgPreview ? (
               <>
                 <img src={form.imgPreview} alt="preview" className="mo-upload-zone__preview" />
@@ -416,7 +359,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
           </div>
           {errors.img && <p className="mo-error" style={{ marginTop: -20, marginBottom: 16 }}>{errors.img}</p>}
 
-          {/* ── Section 1: Identification ── */}
+          {/* Section 1: Identification */}
           <div className="mo-section-sep">
             <div className="mo-section-sep__line" />
             <span className="mo-section-sep__label">Identification</span>
@@ -424,7 +367,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
           </div>
 
           <div className="mo-form-grid">
-            {/* Galerie */}
             <div className="mo-field">
               <label className="mo-label">Galerie de destination <span className="mo-required">*</span></label>
               <p className="mo-hint">Dans quelle galerie exposer cette œuvre ?</p>
@@ -436,7 +378,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               {errors.galerieId && <p className="mo-error">{errors.galerieId}</p>}
             </div>
 
-            {/* Titre */}
             <div className="mo-field">
               <label className="mo-label">Titre de l'œuvre <span className="mo-required">*</span></label>
               <p className="mo-hint">Le nom sous lequel l'œuvre sera exposée</p>
@@ -446,7 +387,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               {errors.titre && <p className="mo-error">{errors.titre}</p>}
             </div>
 
-            {/* Technique */}
             <div className="mo-field">
               <label className="mo-label">Technique <span className="mo-required">*</span></label>
               <select className={`mo-select ${errors.technique ? "mo-input--error" : ""}`}
@@ -457,7 +397,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               {errors.technique && <p className="mo-error">{errors.technique}</p>}
             </div>
 
-            {/* Dimensions */}
             <div className="mo-field">
               <label className="mo-label">Dimensions</label>
               <p className="mo-hint">Format : largeur × hauteur</p>
@@ -465,7 +404,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
                 onChange={e => set("dimensions", e.target.value)} />
             </div>
 
-            {/* Date de réalisation */}
             <div className="mo-field">
               <label className="mo-label">Date de réalisation <span className="mo-required">*</span></label>
               <input type="date" className={`mo-input ${errors.dateRealisation ? "mo-input--error" : ""}`}
@@ -473,7 +411,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               {errors.dateRealisation && <p className="mo-error">{errors.dateRealisation}</p>}
             </div>
 
-            {/* Statut */}
             <div className="mo-field">
               <label className="mo-label">Statut de publication</label>
               <select className="mo-select" value={form.statut} onChange={e => set("statut", e.target.value)}>
@@ -512,7 +449,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
                 maxLength={500} />
             </div>
 
-            {/* Tags */}
             <div className="mo-field mo-form-grid--full">
               <label className="mo-label">Mots-clés / Tags</label>
               <p className="mo-hint">Aidez les visiteurs à trouver votre œuvre</p>
@@ -535,7 +471,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
             </div>
           </div>
 
-          {/* Section tarification */}
+          {/* Tarification */}
           <div className="mo-section-sep" style={{ marginTop: 24 }}>
             <div className="mo-section-sep__line" />
             <span className="mo-section-sep__label">Tarification & Stock</span>
@@ -563,7 +499,6 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="mo-modal__footer">
           <button className="mo-btn mo-btn--ghost" onClick={onClose}>Annuler</button>
           <button className="mo-btn mo-btn--primary mo-btn--save" onClick={handleSave}>
@@ -575,10 +510,17 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
   );
 }
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
-
+// ─── Main Page ──────────────────────────────────────────────────────────────
 export default function MesOeuvres() {
-  const [oeuvres, setOeuvres] = useState(OEUVRES_INIT);
+  const navigate = useNavigate();
+  
+  // ✅ Récupérer depuis le store au lieu de l'état local
+  const oeuvres = useArtisteStore((state) => state.oeuvres);
+  const ajouterOeuvre = useArtisteStore((state) => state.ajouterOeuvre);
+  const modifierOeuvre = useArtisteStore((state) => state.modifierOeuvre);
+  const supprimerOeuvre = useArtisteStore((state) => state.supprimerOeuvre);
+  const chambres = useArtisteStore((state) => state.chambres);
+
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("Tous");
   const [filtreGalerie, setFiltreGalerie] = useState("Tous");
@@ -593,20 +535,22 @@ export default function MesOeuvres() {
     setTimeout(() => setToast(t => ({ ...t, show: false })), 2800);
   };
 
+  // ✅ Utiliser les actions du store
   const handleSave = (data) => {
     if (editOeuvre) {
-      setOeuvres(prev => prev.map(o => o.id === data.id ? data : o));
+      modifierOeuvre(data.id, data);
       showToast("✓ Œuvre mise à jour avec succès");
     } else {
-      setOeuvres(prev => [...prev, data]);
+      ajouterOeuvre(data);
       showToast("✓ Œuvre ajoutée à votre galerie");
     }
     setShowModal(false);
     setEditOeuvre(null);
   };
 
+  // ✅ Utiliser l'action du store
   const handleDelete = (id) => {
-    setOeuvres(prev => prev.filter(o => o.id !== id));
+    supprimerOeuvre(id);
     setDeleteTarget(null);
     showToast("✓ Œuvre supprimée");
   };
@@ -614,14 +558,16 @@ export default function MesOeuvres() {
   const openAdd = () => { setEditOeuvre(null); setShowModal(true); };
   const openEdit = (o) => { setEditOeuvre(o); setShowModal(true); };
 
-  const galeries = GALERIES_ARTISTE;
+  // ✅ Les galeries viennent du store
+  const galeries = chambres.map(c => ({ id: c.id, nom: c.nom }));
   const galerieOptions = ["Tous", ...galeries.map(g => g.nom)];
 
+  // Filtrer les œuvres
   const filtered = oeuvres
     .filter(o => filtreStatut === "Tous" || o.statut === filtreStatut)
     .filter(o => filtreGalerie === "Tous" || o.galerieName === filtreGalerie)
-    .filter(o => !search || o.titre.toLowerCase().includes(search.toLowerCase()) ||
-      o.description.toLowerCase().includes(search.toLowerCase()));
+    .filter(o => !search || o.titre?.toLowerCase().includes(search.toLowerCase()) ||
+      o.description?.toLowerCase().includes(search.toLowerCase()));
 
   const kpis = [
     { icon: "oeuvres", label: "Total œuvres", val: oeuvres.length, color: "#8B2020" },
@@ -643,9 +589,7 @@ export default function MesOeuvres() {
   return (
     <div className="mo-root">
       <Sidebar />
-
       <main className="mo-main">
-
         {/* Header */}
         <div className="mo-header">
           <div>
@@ -709,22 +653,18 @@ export default function MesOeuvres() {
             filtered.map((o, idx) => (
               <div key={o.id} className={`mo-card ${view === "list" ? "mo-card--list" : ""}`}
                 style={{ animationDelay: `${idx * 0.05}s` }}>
-
-                <div className={`mo-card__status mo-card__status--${o.statut.toLowerCase()}`}>{o.statut}</div>
-
+                <div className={`mo-card__status mo-card__status--${o.statut?.toLowerCase() || "brouillon"}`}>{o.statut || "Brouillon"}</div>
                 <div className="mo-card__actions-top">
                   <button className="mo-card__action-btn mo-card__action-btn--edit"
                     onClick={() => openEdit(o)} title="Modifier"><Icons.Edit /></button>
                   <button className="mo-card__action-btn mo-card__action-btn--del"
                     onClick={() => setDeleteTarget(o)} title="Supprimer"><Icons.Trash /></button>
                 </div>
-
                 <div className="mo-card__img-wrap">
                   <img src={o.img} alt={o.titre} className="mo-card__img"
                     onError={e => { e.target.src = `https://picsum.photos/400/280?random=${idx + 1}`; }} />
                   <div className="mo-card__galerie-tag">{o.galerieName}</div>
                 </div>
-
                 <div className="mo-card__body">
                   <span className="mo-card__galerie-name">{o.technique}</span>
                   <h3 className="mo-card__title">{o.titre}</h3>
@@ -735,10 +675,9 @@ export default function MesOeuvres() {
                     <span className="mo-card__meta-item"><Icons.Calendar /> {new Date(o.dateRealisation).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" })}</span>
                   </div>
                 </div>
-
                 <div className="mo-card__footer">
                   <span className="mo-card__price">{o.prix} DT</span>
-                  <span className="mo-card__date">{o.tags.slice(0,2).join(" · ")}</span>
+                  <span className="mo-card__date">{o.tags?.slice(0,2).join(" · ") || ""}</span>
                 </div>
               </div>
             ))

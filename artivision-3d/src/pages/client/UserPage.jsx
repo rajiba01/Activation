@@ -705,6 +705,7 @@ const HOW_TO_MODAL = [
 ];
 
 function EntryModal({ galerie, onClose }) {
+  const navigate = useNavigate();
   const [paying, setPaying] = useState(false);
   const [paid, setPaid] = useState(false);
 
@@ -784,10 +785,12 @@ function EntryModal({ galerie, onClose }) {
               <IC name="Ticket" size={14} style={{ marginRight: 6 }} />
               Votre ticket d'entrée est prêt
             </div>
-            <a href={`/galerie/${galerie.id}`} className="up-modal__enter-btn">
-              <IC name="Building" size={16} style={{ marginRight: 7 }} />
-              Entrer dans la galerie maintenant
-            </a>
+            <button
+                className="up-modal__enter-btn"
+                onClick={() => navigate(`/galerie-3d/${galerie.id}`, { state: { mode: "visiteur" } })}>
+                🏛 Entrer dans la galerie maintenant
+            </button>
+           
           </div>
         )}
       </div>

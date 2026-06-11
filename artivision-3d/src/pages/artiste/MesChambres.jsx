@@ -1,10 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../../styles/Meschambres.css";
-
-// ─── Shared State (in production: use Context/Redux/Zustand) ──────────────────
-// MesChambers reads the same oeuvres data. In real app, both pages share
-// the same store. For demo, we replicate the same initial data.
+import { useArtisteStore } from "../../store/useArtisteStore";
 
 const ARTIST = {
   name: "Ariana Soghra",
@@ -12,117 +9,6 @@ const ARTIST = {
   abonnement: "Premium",
   depuis: "Janvier 2024",
 };
-
-const OEUVRES_DATA = [
-  {
-    id: "o1", galerieId: "g1", galerieName: "Galerie Impressionniste",
-    titre: "Lumière d'Automne",
-    description: "Une exploration de la lumière automnale à travers des touches impressionnistes délicates.",
-    prix: 450, dateRealisation: "2024-09-15", technique: "Huile sur toile",
-    dimensions: "80 × 60 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Impressionnisme", "Automne", "Lumière"],
-    img: "/images/galerie/g1.jpg",
-  },
-  {
-    id: "o2", galerieId: "g1", galerieName: "Galerie Impressionniste",
-    titre: "Reflets Bleutés",
-    description: "Jeu de reflets sur l'eau au coucher du soleil, inspiré des étangs normands.",
-    prix: 280, dateRealisation: "2024-07-20", technique: "Aquarelle",
-    dimensions: "50 × 40 cm", statut: "Publié", nbExemplaires: 3,
-    tags: ["Aquarelle", "Eau", "Coucher de soleil"],
-    img: "/images/galerie/g2.jpg",
-  },
-  {
-    id: "o3", galerieId: "g2", galerieName: "Lumières de Paris",
-    titre: "Portail Doré",
-    description: "La magnificence dorée d'une entrée parisienne, capturée dans ses moindres détails ornementaux.",
-    prix: 720, dateRealisation: "2024-11-03", technique: "Peinture acrylique",
-    dimensions: "100 × 80 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Paris", "Architecture", "Or"],
-    img: "/images/galerie/g3.jpg",
-  },
-  {
-    id: "o4", galerieId: "g3", galerieName: "Abstraction Pure",
-    titre: "Nuit Parisienne",
-    description: "Une nuit parisienne abstraite, entre rêve et réalité, dans des tons profonds de bleu et violet.",
-    prix: 190, dateRealisation: "2024-05-12", technique: "Pastel",
-    dimensions: "40 × 30 cm", statut: "Brouillon", nbExemplaires: 5,
-    tags: ["Nuit", "Abstrait", "Paris"],
-    img: "/images/galerie/g4.jpg",
-  },
-  {
-    id: "o5", galerieId: "g2", galerieName: "Lumières de Paris",
-    titre: "Aube Rosée",
-    description: "Les premières lueurs rosées de l'aube sur les toits de la ville endormie.",
-    prix: 340, dateRealisation: "2024-08-28", technique: "Huile sur toile",
-    dimensions: "70 × 55 cm", statut: "Vendu", nbExemplaires: 1,
-    tags: ["Aube", "Lumière", "Toits"],
-    img: "/images/galerie/g5.jpg",
-  },
-  {
-    id: "o6", galerieId: "g1", galerieName: "Galerie Impressionniste",
-    titre: "Horizon Violet",
-    description: "Le violet profond de l'horizon au crépuscule, entre ciel et terre.",
-    prix: 560, dateRealisation: "2025-01-10", technique: "Huile sur toile",
-    dimensions: "90 × 70 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Horizon", "Crépuscule", "Violet"],
-    img: "/images/galerie/g6.png",
-  },
-  {
-    id: "o7", galerieId: "g2", galerieName: "Lumières de Paris",
-    titre: "Tempête d'Or",
-    description: "Une tempête abstraite déclinée dans des teintes or et ambre, puissance et beauté.",
-    prix: 820, dateRealisation: "2025-02-14", technique: "Acrylique",
-    dimensions: "120 × 90 cm", statut: "Publié", nbExemplaires: 1,
-    tags: ["Abstrait", "Or", "Puissance"],
-    img: "/images/galerie/g1.jpg",
-  },
-];
-
-const CHAMBRES_DATA = [
-  {
-    id: "g1",
-    nom: "Galerie Impressionniste",
-    description: "Votre espace principal dédié aux œuvres lumineuses et aux jeux de lumière impressionnistes.",
-    decor: "Classique",
-    surface: "20 × 30 m",
-    dateCreation: "2024-01-15",
-    prixEntree: 5,
-    dureeAcces: "48h",
-    nbVisiteursTotal: 1240,
-    revenus: 6200,
-    headerVariant: "burg",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  },
-  {
-    id: "g2",
-    nom: "Lumières de Paris",
-    description: "Une galerie élégante aux accents dorés, idéale pour vos peintures architecturales et urbaines.",
-    decor: "Baroque",
-    surface: "15 × 25 m",
-    dateCreation: "2024-06-08",
-    prixEntree: 7,
-    dureeAcces: "72h",
-    nbVisiteursTotal: 890,
-    revenus: 6230,
-    headerVariant: "gold",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>,
-  },
-  {
-    id: "g3",
-    nom: "Abstraction Pure",
-    description: "Espace contemporain épuré pour vos créations abstraites et expérimentales.",
-    decor: "Moderne",
-    surface: "18 × 22 m",
-    dateCreation: "2025-01-20",
-    prixEntree: 4,
-    dureeAcces: "24h",
-    nbVisiteursTotal: 340,
-    revenus: 1360,
-    headerVariant: "green",
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
-  },
-];
 
 const NAV_ITEMS = [
   { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
@@ -134,33 +20,54 @@ const NAV_ITEMS = [
 ];
 
 // ─── Custom Scrollbar ──────────────────────────────────────────────────────────
-
 function CustomScrollbar() {
   const thumbRef = useRef(null);
-  const isDrag = useRef(false); const dragY = useRef(0); const scrollY0 = useRef(0);
+  const isDrag = useRef(false); 
+  const dragY = useRef(0); 
+  const scrollY0 = useRef(0);
+  
   useEffect(() => {
     const update = () => {
-      const t = thumbRef.current; if (!t) return;
+      const t = thumbRef.current; 
+      if (!t) return;
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
       const ratio = clientHeight / scrollHeight;
       const h = Math.max(ratio * 100, 8);
       const top = scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * (100 - h) : 0;
-      t.style.height = `${h}vh`; t.style.top = `${top}vh`;
+      t.style.height = `${h}vh`; 
+      t.style.top = `${top}vh`;
     };
-    window.addEventListener("scroll", update, { passive: true }); window.addEventListener("resize", update); update();
-    return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    window.addEventListener("scroll", update, { passive: true }); 
+    window.addEventListener("resize", update); 
+    update();
+    return () => { 
+      window.removeEventListener("scroll", update); 
+      window.removeEventListener("resize", update); 
+    };
   }, []);
+  
   const onMouseDown = (e) => {
-    isDrag.current = true; dragY.current = e.clientY; scrollY0.current = window.scrollY;
-    const onMove = (ev) => { if (!isDrag.current) return; const { scrollHeight, clientHeight } = document.documentElement; window.scrollTo(0, scrollY0.current + ((ev.clientY - dragY.current) / clientHeight) * scrollHeight); };
-    const onUp = () => { isDrag.current = false; window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); };
-    window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
+    isDrag.current = true; 
+    dragY.current = e.clientY; 
+    scrollY0.current = window.scrollY;
+    const onMove = (ev) => { 
+      if (!isDrag.current) return; 
+      const { scrollHeight, clientHeight } = document.documentElement; 
+      window.scrollTo(0, scrollY0.current + ((ev.clientY - dragY.current) / clientHeight) * scrollHeight); 
+    };
+    const onUp = () => { 
+      isDrag.current = false; 
+      window.removeEventListener("mousemove", onMove); 
+      window.removeEventListener("mouseup", onUp); 
+    };
+    window.addEventListener("mousemove", onMove); 
+    window.addEventListener("mouseup", onUp);
   };
+  
   return <div className="mc-csb-track"><div className="mc-csb-thumb" ref={thumbRef} onMouseDown={onMouseDown} /></div>;
 }
 
 // ─── Sidebar ───────────────────────────────────────────────────────────────────
-
 function Sidebar() {
   const navigate = useNavigate();
   return (
@@ -197,7 +104,6 @@ function Sidebar() {
 }
 
 // ─── Oeuvre Detail Drawer ──────────────────────────────────────────────────────
-
 function OeuvreDetailPanel({ oeuvre, onClose, onNavigateToEdit }) {
   if (!oeuvre) return null;
   return (
@@ -275,21 +181,18 @@ function OeuvreDetailPanel({ oeuvre, onClose, onNavigateToEdit }) {
 }
 
 // ─── Chambre Card ─────────────────────────────────────────────────────────────
-
-function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddOeuvre }) {
+function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddOeuvre, navigate }) {
   const MAX_DISPLAY = 5;
   const rest = oeuvres.length - MAX_DISPLAY;
-
-  const totalRevenues = chambre.revenus;
+  const totalRevenues = chambre.revenus || 0;
   const published = oeuvres.filter(o => o.statut === "Publié").length;
 
   return (
     <div className="mc-chambre-card">
-      {/* Dark header */}
-      <div className={`mc-chambre-card__header mc-chambre-card__header--${chambre.headerVariant}`}>
+      <div className={`mc-chambre-card__header mc-chambre-card__header--${chambre.headerVariant || "burg"}`}>
         <div className="mc-chambre-card__header-inner">
           <div className="mc-chambre-card__header-top">
-            <div className="mc-chambre-card__icon-wrap">{chambre.icon}</div>
+            <div className="mc-chambre-card__icon-wrap">🖼️</div>
             <div className="mc-chambre-card__actions-head">
               <button className="mc-chambre-card__act-btn" title="Modifier la chambre">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3l4 4-7 7H10v-4l7-7z"/><path d="M4 20h16"/></svg>
@@ -310,7 +213,7 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
               <span className="mc-chambre-card__stat-lbl">Œuvres</span>
             </div>
             <div className="mc-chambre-card__stat">
-              <span className="mc-chambre-card__stat-val">{chambre.nbVisiteursTotal.toLocaleString()}</span>
+              <span className="mc-chambre-card__stat-val">{chambre.nbVisiteursTotal?.toLocaleString() || 0}</span>
               <span className="mc-chambre-card__stat-lbl">Visiteurs</span>
             </div>
             <div className="mc-chambre-card__stat">
@@ -318,14 +221,13 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
               <span className="mc-chambre-card__stat-lbl">Revenus DT</span>
             </div>
             <div className="mc-chambre-card__stat">
-              <span className="mc-chambre-card__stat-val">{chambre.prixEntree} DT</span>
+              <span className="mc-chambre-card__stat-val">{chambre.prixEntree || 0} DT</span>
               <span className="mc-chambre-card__stat-lbl">Entrée</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Body */}
       <div className="mc-chambre-card__body">
         <p className="mc-oeuvres-section-title">
           Œuvres exposées
@@ -355,7 +257,7 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
                 <div className="mc-oeuvre-mini__overlay">
                   <p className="mc-oeuvre-mini__title">{o.titre}</p>
                 </div>
-                <div className={`mc-oeuvre-mini__status mc-oeuvre-mini__status--${o.statut.toLowerCase()}`} />
+                <div className={`mc-oeuvre-mini__status mc-oeuvre-mini__status--${o.statut?.toLowerCase() || "brouillon"}`} />
               </div>
             ))}
             {rest > 0 && (
@@ -373,10 +275,20 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
             Créée le {new Date(chambre.dateCreation).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
             &nbsp;· {chambre.decor} · {chambre.surface}
           </span>
-          <a href={`/galerie/${chambre.id}`} className="mc-chambre-card__cta">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Visiter la galerie
-          </a>
+         
+          <button 
+            onClick={() => {
+              console.log("🖼️ Visite 3D - ID:", chambre.id);
+              navigate(`/galerie-3d/${chambre.id}`, { state: { mode: "artiste" } });
+            }} 
+            className="mc-chambre-card__cta"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}>
+              <path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Visiter en 3D
+          </button>
         </div>
       </div>
     </div>
@@ -384,14 +296,14 @@ function ChambresCard({ chambre, oeuvres, onOeuvreClick, onDeleteChambre, onAddO
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
-
 export default function MesChambres() {
   const navigate = useNavigate();
 
-  // In production: import oeuvres from shared context/store
-  // Here: local state mirroring MesOeuvres data
-  const [oeuvres] = useState(OEUVRES_DATA);
-  const [chambres, setChambres] = useState(CHAMBRES_DATA);
+  // ✅ Utiliser le store
+  const chambres = useArtisteStore((state) => state.chambres);
+  const oeuvres = useArtisteStore((state) => state.oeuvres);
+  const supprimerChambre = useArtisteStore((state) => state.supprimerChambre);
+
   const [selectedOeuvre, setSelectedOeuvre] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState({ msg: "", show: false });
@@ -404,24 +316,24 @@ export default function MesChambres() {
   const handleDeleteChambre = (chambre) => setDeleteTarget(chambre);
 
   const confirmDelete = () => {
-    setChambres(prev => prev.filter(c => c.id !== deleteTarget.id));
+    supprimerChambre(deleteTarget.id);
     setDeleteTarget(null);
     showToast("✓ Galerie supprimée");
   };
 
   const handleNavigateToEdit = (oeuvre) => {
     setSelectedOeuvre(null);
-    // Navigate to MesOeuvres and open edit modal for this oeuvre
     navigate("/mes-oeuvres", { state: { editOeuvreId: oeuvre.id } });
   };
 
-  const getOeuvresForChambre = (galerieId) =>
-    oeuvres.filter(o => o.galerieId === galerieId);
+  // ✅ Fonction pour récupérer les œuvres d'une chambre (sans créer de boucle)
+  const getOeuvresForChambre = useCallback((galerieId) => {
+    return oeuvres.filter(o => o.galerieId === galerieId && o.statut === "Publié");
+  }, [oeuvres]);
 
   const totalOeuvres = oeuvres.length;
-  const totalVisiteurs = chambres.reduce((s, c) => s + c.nbVisiteursTotal, 0);
-  const totalRevenus = chambres.reduce((s, c) => s + c.revenus, 0);
-  const totalPubliees = oeuvres.filter(o => o.statut === "Publié").length;
+  const totalVisiteurs = chambres.reduce((s, c) => s + (c.nbVisiteursTotal || 0), 0);
+  const totalRevenus = chambres.reduce((s, c) => s + (c.revenus || 0), 0);
 
   const kpis = [
     { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Mes galeries", val: chambres.length, color: "#8B2020" },
@@ -435,8 +347,6 @@ export default function MesChambres() {
       <Sidebar />
 
       <main className="mc-main">
-
-        {/* Header */}
         <div className="mc-header">
           <div>
             <span className="mc-header__eyebrow">
@@ -460,7 +370,6 @@ export default function MesChambres() {
           </div>
         </div>
 
-        {/* KPIs */}
         <div className="mc-kpis">
           {kpis.map((k, i) => (
             <div key={i} className="mc-kpi">
@@ -471,7 +380,6 @@ export default function MesChambres() {
           ))}
         </div>
 
-        {/* Chambres Grid */}
         {chambres.length === 0 ? (
           <div className="mc-empty">
             <span className="mc-empty__icon">
@@ -493,6 +401,7 @@ export default function MesChambres() {
                   onOeuvreClick={setSelectedOeuvre}
                   onDeleteChambre={handleDeleteChambre}
                   onAddOeuvre={() => navigate("/mes-oeuvres")}
+                  navigate={navigate}
                 />
               </div>
             ))}
@@ -500,7 +409,6 @@ export default function MesChambres() {
         )}
       </main>
 
-      {/* Oeuvre Detail Drawer */}
       {selectedOeuvre && (
         <OeuvreDetailPanel
           oeuvre={selectedOeuvre}
@@ -508,8 +416,7 @@ export default function MesChambres() {
           onNavigateToEdit={handleNavigateToEdit}
         />
       )}
-
-      {/* Delete Confirm */}
+      
       {deleteTarget && (
         <div className="mc-confirm-backdrop" onClick={() => setDeleteTarget(null)}>
           <div className="mc-confirm" onClick={e => e.stopPropagation()}>

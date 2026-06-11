@@ -1,10 +1,25 @@
-import { useRef, useState } from "react";
+// src/components/3d/ArtworkFrame.jsx
+import { useRef, useState, Suspense } from "react";
 import { useFrame } from "@react-three/fiber";
-import { useTexture, Text } from "@react-three/drei";
+import { Text, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
-// Fallback texture (couleur unie si image non chargée)
-function FallbackFrame({ width = 1.2, height = 0.9, color = "#8B6030" }) {
+// ✅ Composant image avec useTexture (Suspense-based)
+function ArtworkImage({ url, width, height }) {
+  const texture = useTexture(url);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+
+  return (
+    <mesh>
+      <planeGeometry args={[width, height]} />
+      <meshStandardMaterial map={texture} toneMapped={false} />
+    </mesh>
+  );
+}
+
+// ✅ Fallback coloré pendant le chargement
+function ArtworkPlaceholder({ width, height, color = "#8B7355" }) {
   return (
     <mesh>
       <planeGeometry args={[width, height]} />
@@ -13,92 +28,130 @@ function FallbackFrame({ width = 1.2, height = 0.9, color = "#8B6030" }) {
   );
 }
 
-function ArtworkMesh({ artwork, onClick, width = 1.2, height = 0.9 }) {
-  const meshRef = useRef();
-  const [hovered, setHovered] = useState(false);
-
-  // Charge la texture depuis l'URL de l'API
-  let texture = null;
-  try {
-    texture = useTexture(artwork.image_url || "/images/galerie/g1.jpg");
-  } catch {
-    // texture reste null
+// ✅ Wrapper avec gestion d'erreur
+function ArtworkImageSafe({ url, width, height }) {
+  if (!url || url.trim() === "") {
+    return <ArtworkPlaceholder width={width} height={height} color="#A0522D" />;
   }
 
-  // Légère animation au hover
+  return (
+    <Suspense fallback={<ArtworkPlaceholder width={width} height={height} color="#C4A882" />}>
+      <ArtworkImage url={url} width={width} height={height} />
+    </Suspense>
+  );
+}
+
+// ✅ Mesh principal avec hover
+function ArtworkMesh({ artwork, onClick, width = 1.2, height = 0.9 }) {
+  const groupRef = useRef();
+  const [hovered, setHovered] = useState(false);
+
   useFrame(() => {
-    if (!meshRef.current) return;
-    const target = hovered ? 0.03 : 0;
-    meshRef.current.position.z = THREE.MathUtils.lerp(
-      meshRef.current.position.z,
-      target,
+    if (!groupRef.current) return;
+    const targetZ = hovered ? 0.04 : 0;
+    groupRef.current.position.z = THREE.MathUtils.lerp(
+      groupRef.current.position.z,
+      targetZ,
       0.1
     );
   });
 
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (onClick && artwork) onClick(artwork);
+  };
+
+  const handlePointerEnter = (e) => {
+    e.stopPropagation();
+    setHovered(true);
+    document.body.style.cursor = "pointer";
+  };
+
+  const handlePointerLeave = (e) => {
+    e.stopPropagation();
+    setHovered(false);
+    document.body.style.cursor = "default";
+  };
+
   return (
     <group
-      ref={meshRef}
-      onClick={(e) => { e.stopPropagation(); onClick(artwork); }}
-      onPointerEnter={() => { setHovered(true); document.body.style.cursor = "pointer"; }}
-      onPointerLeave={() => { setHovered(false); document.body.style.cursor = "default"; }}
+      ref={groupRef}
+      onClick={handleClick}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
     >
-      {/* Cadre doré */}
-      <mesh position={[0, 0, -0.005]}>
-        <boxGeometry args={[width + 0.12, height + 0.12, 0.04]} />
-        <meshStandardMaterial color={hovered ? "#D4A853" : "#B8922A"} metalness={0.8} roughness={0.2} />
+      {/* Cadre doré derrière */}
+      <mesh position={[0, 0, -0.02]}>
+        <boxGeometry args={[width + 0.14, height + 0.14, 0.05]} />
+        <meshStandardMaterial
+          color={hovered ? "#D4A853" : "#B8922A"}
+          metalness={0.85}
+          roughness={0.15}
+        />
       </mesh>
 
-      {/* Toile */}
-      <mesh>
-        <planeGeometry args={[width, height]} />
-        {texture ? (
-          <meshStandardMaterial map={texture} />
-        ) : (
-          <meshStandardMaterial color="#C4A882" />
-        )}
-      </mesh>
+      {/* Image de l'œuvre */}
+      <ArtworkImageSafe url={artwork?.img} width={width} height={height} />
 
-      {/* Petit spot de lumière simulé */}
+      {/* Lumière de spot au hover */}
       {hovered && (
-        <pointLight position={[0, 0.5, 0.3]} intensity={0.8} color="#fff8e7" distance={2} />
+        <pointLight
+          position={[0, 0.6, 0.4]}
+          intensity={1.2}
+          color="#fff8e7"
+          distance={2.5}
+        />
       )}
     </group>
   );
 }
 
-// Composant principal exporté
+// ✅ Composant principal exporté
 export default function ArtworkFrame({ artwork, position, rotation, onClick }) {
-  if (!artwork) return null;
+  if (!artwork) {
+    console.warn("⚠️ ArtworkFrame: artwork est null/undefined");
+    return null;
+  }
 
-  // Dimensions selon les métadonnées ou défaut
   const w = artwork.display_width || 1.2;
   const h = artwork.display_height || 0.9;
 
+  console.log("🖼️ ArtworkFrame:", artwork.titre, "| img:", artwork.img, "| pos:", position);
+
   return (
     <group position={position} rotation={rotation}>
-      <ArtworkMesh artwork={artwork} onClick={onClick} width={w} height={h} />
+      <ArtworkMesh
+        artwork={artwork}
+        onClick={onClick}
+        width={w}
+        height={h}
+      />
 
-      {/* Étiquette sous le tableau */}
+      {/* Titre */}
       <Text
-        position={[0, -(h / 2) - 0.18, 0.01]}
-        fontSize={0.07}
-        color="#2C0A0A"
+        position={[0, -(h / 2) - 0.18, 0.02]}
+        fontSize={0.075}
+        color="#1a0a0a"
         anchorX="center"
         anchorY="middle"
-        maxWidth={w}
+        maxWidth={w + 0.2}
+        font={undefined}
       >
-        {artwork.title || "Sans titre"}
+        {artwork.titre || "Sans titre"}
       </Text>
-      <Text
-        position={[0, -(h / 2) - 0.30, 0.01]}
-        fontSize={0.055}
-        color="#8B6030"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {artwork.price ? `${artwork.price} DT` : ""}
-      </Text>
+
+      {/* Prix */}
+      {artwork.prix && (
+        <Text
+          position={[0, -(h / 2) - 0.32, 0.02]}
+          fontSize={0.06}
+          color="#8B6030"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {`${artwork.prix} DT`}
+        </Text>
+      )}
     </group>
   );
 }
