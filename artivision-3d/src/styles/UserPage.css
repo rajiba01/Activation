@@ -978,3 +978,77 @@ button { font-family: inherit; }
   .up-onboard__steps { flex-wrap: wrap; }
   .up-trailer { margin-left: 20px; margin-right: 20px; }
 }
+/* Ajouter à UserPage.css */
+
+/* Avatar initials pour les avis */
+.up-review-card__avatar-initial {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9A040, #B8922A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+/* Étoiles pour le formulaire d'avis */
+.review-rating {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.review-star {
+  font-size: 28px;
+  cursor: pointer;
+  color: #ddd;
+  transition: color 0.2s;
+}
+
+.review-star.active {
+  color: #C9A040;
+}
+
+.review-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(201,160,64,0.3);
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 16px;
+}
+
+.review-textarea:focus {
+  outline: none;
+  border-color: #C9A040;
+}
+
+/* Footer des reviews */
+.up-reviews__footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.up-reviews__add-btn {
+  background: linear-gradient(135deg, #C9A040, #B8922A);
+  color: #1A0C10;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.up-reviews__add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201,160,64,0.3);
+}

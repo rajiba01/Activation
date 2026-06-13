@@ -1,11 +1,13 @@
+// src/components/Headerartiste.jsx
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { authService } from "../services/auth.service";
 import "../styles/Headerartiste.css";
 
 const navLinks = [
   { label: "Accueil",              path: "/espace-artiste" },
-  { label: "Listes des commandes", path: "/commandes" },
-  { label: "Extension 3D",         path: "/extension-3d" },
+  { label: "Commandes",            path: "/commandes" },
+  { label: "Mes Galeries",         path: "/mes-chambres" },
   { label: "Ajouter une Galerie",  path: "/ajouter-galerie" },
   { label: "Aide",                 path: "/aide" },
 ];
@@ -16,9 +18,43 @@ export default function Header() {
   const [searchValue,  setSearchValue]  = useState("");
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [profileOpen,  setProfileOpen]  = useState(false);
+  const [userInfo,     setUserInfo]     = useState({ name: "Artiste", email: "", avatar: "" });
+  const [loading,      setLoading]      = useState(true);
+  
   const searchRef  = useRef(null);
   const profileRef = useRef(null);
   const navigate   = useNavigate();
+  const location   = useLocation();
+
+  // Charger les informations de l'utilisateur connecté
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const response = await authService.getCurrentUser();
+        const userData = response.data?.data || response.data;
+        const prenom = userData.prenom || userData.Prenom || "";
+        const nom = userData.nom || userData.Nom || "";
+        const email = userData.email || "";
+        const name = `${prenom} ${nom}`.trim() || "Artiste";
+        
+        setUserInfo({
+          name: name,
+          email: email,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=C9A040&color=fff`
+        });
+      } catch (error) {
+        console.error("Erreur chargement user:", error);
+        setUserInfo({
+          name: "Artiste",
+          email: "",
+          avatar: "https://i.pravatar.cc/80?img=47"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUserInfo();
+  }, []);
 
   /* ── Scroll shadow ── */
   useEffect(() => {
@@ -52,6 +88,16 @@ export default function Header() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    navigate("/login");
+  };
+
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <header className={`hdr ${scrolled ? "hdr--scrolled" : ""}`}>
 
@@ -61,22 +107,24 @@ export default function Header() {
       <div className="hdr__inner">
 
         {/* ── Logo ── */}
-        
-        <a href="/" className="hdr__logo" aria-label="ARTIVISION accueil">
+        <a href="/espace-artiste" className="hdr__logo" aria-label="ARTIVISION accueil">
           <img
             src="/images/logo_artivision.png"
             alt="ARTIVISION 3D"
             className="hdr__logo-img"
+            onError={(e) => { e.target.style.display = "none"; }}
           />
           <span className="hdr__logo-text">ARTIVISION</span>
-
         </a>
-
 
         {/* ── Nav (desktop) ── */}
         <nav className="hdr__nav" aria-label="Navigation principale">
           {navLinks.map((l) => (
-            <a key={l.path} href={l.path} className="hdr__nav-link">
+            <a 
+              key={l.path} 
+              href={l.path} 
+              className={`hdr__nav-link ${isActive(l.path) ? "hdr__nav-link--active" : ""}`}
+            >
               {l.label}
               <span className="hdr__nav-underline" />
             </a>
@@ -131,12 +179,13 @@ export default function Header() {
               aria-expanded={profileOpen}
             >
               <img
-                src="https://i.pravatar.cc/80?img=47"
+                src={userInfo.avatar}
                 alt="Avatar"
                 className="hdr__avatar-img"
+                onError={(e) => { e.target.src = "https://i.pravatar.cc/80?img=47"; }}
               />
               <div className="hdr__avatar-status" />
-              <span className="hdr__avatar-name">Ariana</span>
+              <span className="hdr__avatar-name">{loading ? "..." : userInfo.name.split(" ")[0]}</span>
               <svg className={`hdr__avatar-chevron ${profileOpen ? "hdr__avatar-chevron--open" : ""}`}
                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <polyline points="6 9 12 15 18 9" />
@@ -147,18 +196,20 @@ export default function Header() {
             {profileOpen && (
               <div className="hdr__dropdown">
                 <div className="hdr__dropdown-top">
-                  <img src="https://i.pravatar.cc/80?img=47" alt="Avatar" className="hdr__dropdown-avatar" />
+                  <img src={userInfo.avatar} alt="Avatar" className="hdr__dropdown-avatar" 
+                    onError={(e) => { e.target.src = "https://i.pravatar.cc/80?img=47"; }} />
                   <div>
-                    <p className="hdr__dropdown-name">Ariana Soghra</p>
-                    <p className="hdr__dropdown-role">Artiste • Premium</p>
+                    <p className="hdr__dropdown-name">{userInfo.name}</p>
+                    <p className="hdr__dropdown-role">Artiste</p>
                   </div>
                 </div>
                 <div className="hdr__dropdown-divider" />
                 {[
-                  { icon: "◈", label: "Mon Dashboard",  path: "/dashboard-artiste" },
-                  { icon: "🖼", label: "Mes Œuvres",     path: "/mes-oeuvres" },
-                  { icon: "🏛", label: "Ma Chambre",     path: "/ma-chambre" },
-                  { icon: "⚙", label: "Paramètres",     path: "/parametres" },
+                  { icon: "◈", label: "Dashboard",     path: "/dashboard-artiste" },
+                  { icon: "🖼️", label: "Mes Œuvres",    path: "/mes-oeuvres" },
+                  { icon: "🏛️", label: "Mes Galeries",  path: "/mes-chambres" },
+                  { icon: "🎫", label: "Mes Paiements", path: "/mes-paiements" },
+                  { icon: "⚙️", label: "Paramètres",    path: "/parametres" },
                 ].map((item) => (
                   <a key={item.path} href={item.path} className="hdr__dropdown-item"
                     onClick={() => setProfileOpen(false)}>
@@ -167,8 +218,7 @@ export default function Header() {
                   </a>
                 ))}
                 <div className="hdr__dropdown-divider" />
-                <button className="hdr__dropdown-logout"
-                  onClick={() => { setProfileOpen(false); navigate("/login"); }}>
+                <button className="hdr__dropdown-logout" onClick={handleLogout}>
                   <span>⎋</span> Se déconnecter
                 </button>
               </div>
@@ -195,7 +245,7 @@ export default function Header() {
       {menuOpen && (
         <nav className="hdr__mobile-nav" aria-label="Navigation mobile">
           {navLinks.map((l) => (
-            <a key={l.path} href={l.path} className="hdr__mobile-link"
+            <a key={l.path} href={l.path} className={`hdr__mobile-link ${isActive(l.path) ? "hdr__mobile-link--active" : ""}`}
               onClick={() => setMenuOpen(false)}>
               {l.label}
             </a>
@@ -203,8 +253,11 @@ export default function Header() {
           <div className="hdr__mobile-divider" />
           <a href="/dashboard-artiste" className="hdr__mobile-link hdr__mobile-link--accent"
             onClick={() => setMenuOpen(false)}>
-            ◈ Mon Dashboard
+            ◈ Dashboard
           </a>
+          <button className="hdr__mobile-logout" onClick={handleLogout}>
+            ⎋ Se déconnecter
+          </button>
         </nav>
       )}
 

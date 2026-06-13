@@ -1,3 +1,4 @@
+// src/pages/login/InscriptionArtiste.jsx
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -5,6 +6,8 @@ import {
   Palette, Camera, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import '../../styles/InscriptionArtiste.css';
+import { authService } from "../../services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 const IMG = {
   logo:   "/images/logo_artivision.png",
@@ -133,6 +136,8 @@ function DropdownPortal({ value, onChange, open, setOpen }) {
 
 /* ════════════ COMPOSANT PRINCIPAL ════════════ */
 export default function ArtivisionPage() {
+  const navigate = useNavigate();
+  
   const [nom, setNom]           = useState("");
   const [prenom, setPrenom]     = useState("");
   const [username, setUsername] = useState("");
@@ -144,21 +149,19 @@ export default function ArtivisionPage() {
   const [photo, setPhoto]       = useState(null);
   const [dropOpen, setDropOpen] = useState(false);
 
-  const [view, setView]   = useState("register");
   const [step, setStep]   = useState(1);
   const [ready, setReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 60);
     return () => clearTimeout(t);
   }, []);
 
-  const switchView = (v) => { setView(v); setStep(1); };
-  
   const handlePhotoChange = (e) => {
     if (e.target.files[0]) {
       const fileName = e.target.files[0].name;
-      // Tronquer le nom si trop long (garde l'extension)
       const maxLength = 20;
       if (fileName.length > maxLength) {
         const extension = fileName.split('.').pop();
@@ -170,31 +173,53 @@ export default function ArtivisionPage() {
       }
     }
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (step === 2) {
+      setLoading(true);
+      setError("");
+      
+      try {
+        const artistData = {
+          pseudo: username,
+          nom: nom,
+          prenom: prenom,
+          email: email,
+          mdp: password,
+          biographie: bio || "",
+          style_art: style || "",
+          photo: photo ? document.getElementById('photo-upload')?.files[0] : null,
+        };
+        
+        console.log("📤 Envoi inscription artiste:", artistData);
+        
+        const response = await authService.registerArtist(artistData);
+        console.log("✅ Inscription artiste réussie:", response.data);
+        
+        // Connexion automatique après inscription
+        const loginResponse = await authService.login(username, password);
+        if (loginResponse.data?.data?.access) {
+          localStorage.setItem('access_token', loginResponse.data.data.access);
+          localStorage.setItem('refresh_token', loginResponse.data.data.refresh);
+          navigate("/dashboard-artiste");
+        }
+      } catch (error) {
+        console.error("❌ Erreur inscription artiste:", error.response?.data || error);
+        setError(JSON.stringify(error.response?.data?.errors || error.response?.data));
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
   
   const canProceed = nom.trim() && prenom.trim() && username.trim() && email.trim() && password.trim();
 
-  // Message conditionnel pour le panneau gauche
-  const leftPanelContent = view === "login" ? (
-    <>
-      <p className="av-welcome-text">Bienvenue<br /> chez<br /> Artivision</p>
-    
-    </>
-  ) : (
-    <>
-      <p className="av-already-text">Vous avez un compte déjà?</p>
-      <button className="av-login-btn" onClick={() => switchView("login")}>
-        Se connecter
-      </button>
-    </>
-  );
-
   return (
     <div className="av-root">
-
       {/* ══════════ PANNEAU GAUCHE ══════════ */}
       <div className={`av-left-panel${ready ? " av-left-ready" : ""}`}>
         <Particles />
-        {/* image4 — cadre décoratif filigrane */}
         <img src={IMG.image4} alt="" className="av-left-deco" aria-hidden="true" />
 
         <div className="av-logo-wrap av-anim-fade-down">
@@ -202,7 +227,11 @@ export default function ArtivisionPage() {
           <span className="av-logo-name">ARTIVISION</span>
         </div>
         <div className="av-left-content av-anim-fade-up">
-          {leftPanelContent}
+          <p className="av-welcome-text">Inscription<br /> Artiste</p>
+          <p className="av-already-text">Vous avez un compte déjà?</p>
+          <button className="av-login-btn" onClick={() => navigate("/login")}>
+            Se connecter
+          </button>
         </div>
         <div className="av-socials av-anim-fade-up">
           {["instagram", "facebook", "x", "linkedin"].map((s) => (
@@ -216,8 +245,8 @@ export default function ArtivisionPage() {
       {/* ══════════ PANNEAU DROIT ══════════ */}
       <div className="av-right-panel">
         <Particles />
-        <img src={IMG.image1} alt="" className="av-hand"            aria-hidden="true" />
-        <img src={IMG.image2} alt="" className="av-orn-top-right"   aria-hidden="true" />
+        <img src={IMG.image1} alt="" className="av-hand" aria-hidden="true" />
+        <img src={IMG.image2} alt="" className="av-orn-top-right" aria-hidden="true" />
         <img src={IMG.image3} alt="" className="av-orn-bottom-left" aria-hidden="true" />
 
         <div className="av-card-wrapper">
@@ -225,122 +254,105 @@ export default function ArtivisionPage() {
           <img src={IMG.image5} alt="médaillon" className="av-medallion" />
 
           <div className="av-card-content">
+            <form onSubmit={handleSubmit}>
+              {/* ÉTAPE 1 - Informations personnelles */}
+              {step === 1 && (
+                <>
+                  <h2 className="av-parch-title">Inscrivez vous à l'espace artiste</h2>
+                  <div className="av-steps-indicator">
+                    <div className="av-step-dot av-step-dot--active" />
+                    <div className="av-step-line" />
+                    <div className="av-step-dot" />
+                  </div>
 
-            {/* ─────── CONNEXION ─────── */}
-            {view === "login" && (
-              <>
-                <h2 className="av-parch-title">Connectez-vous</h2>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={Mail} />
-                  <input className="av-field-input" type="email" placeholder="Email ou username" />
-                </div>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={Lock} />
-                  <input className="av-field-input" type="password" placeholder="Mot de passe" />
-                </div>
-                <button className="av-submit-btn">Se connecter</button>
-                <p className="av-switch-link">
-                  Pas encore de compte ?{" "}
-                  <span className="av-switch-anchor" onClick={() => switchView("register")}>
-                    S'inscrire
-                  </span>
-                </p>
-              </>
-            )}
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={User} />
+                    <input className="av-field-input" type="text" placeholder="Nom"
+                      value={nom} onChange={(e) => setNom(e.target.value)} />
+                  </div>
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={User} />
+                    <input className="av-field-input" type="text" placeholder="Prénom"
+                      value={prenom} onChange={(e) => setPrenom(e.target.value)} />
+                  </div>
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={AtSign} />
+                    <input className="av-field-input" type="text" placeholder="Nom d'utilisateur"
+                      value={username} onChange={(e) => setUsername(e.target.value)} />
+                  </div>
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={Mail} />
+                    <input className="av-field-input" type="email" placeholder="Email"
+                      value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={Lock} />
+                    <input className="av-field-input" type="password" placeholder="Mot de passe"
+                      value={password} onChange={(e) => setPassword(e.target.value)} />
+                  </div>
 
-            {/* ─────── ÉTAPE 1 ─────── */}
-            {view === "register" && step === 1 && (
-              <>
-                <h2 className="av-parch-title">Inscrivez vous au espace artiste</h2>
-                <div className="av-steps-indicator">
-                  <div className="av-step-dot av-step-dot--active" />
-                  <div className="av-step-line" />
-                  <div className="av-step-dot" />
-                </div>
+                  <button
+                    type="button"
+                    className={`av-submit-btn${!canProceed ? " av-submit-btn--disabled" : ""}`}
+                    onClick={() => canProceed && setStep(2)}
+                    disabled={!canProceed}
+                  >
+                    <span>Suivant</span>
+                    <ChevronRight size={15} strokeWidth={2} />
+                  </button>
+                </>
+              )}
 
-                <div className="av-field-wrap">
-                  <FieldIcon icon={User} />
-                  <input className="av-field-input" type="text" placeholder="Nom"
-                    value={nom} onChange={(e) => setNom(e.target.value)} />
-                </div>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={User} />
-                  <input className="av-field-input" type="text" placeholder="Prénom"
-                    value={prenom} onChange={(e) => setPrenom(e.target.value)} />
-                </div>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={AtSign} />
-                  <input className="av-field-input" type="text" placeholder="User name"
-                    value={username} onChange={(e) => setUsername(e.target.value)} />
-                </div>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={Mail} />
-                  <input className="av-field-input" type="email" placeholder="Email"
-                    value={email} onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div className="av-field-wrap">
-                  <FieldIcon icon={Lock} />
-                  <input className="av-field-input" type="password" placeholder="Mot de passe"
-                    value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
+              {/* ÉTAPE 2 - Profil artiste */}
+              {step === 2 && (
+                <>
+                  <h2 className="av-parch-title">Votre profil artiste</h2>
+                  <div className="av-steps-indicator">
+                    <div className="av-step-dot av-step-dot--done" onClick={() => setStep(1)} />
+                    <div className="av-step-line av-step-line--done" />
+                    <div className="av-step-dot av-step-dot--active" />
+                  </div>
 
-                <button
-                  className={`av-submit-btn${!canProceed ? " av-submit-btn--disabled" : ""}`}
-                  onClick={() => canProceed && setStep(2)}
-                  disabled={!canProceed}
-                >
-                  <span>Suivant</span>
-                  <ChevronRight size={15} strokeWidth={2} />
-                </button>
-              </>
-            )}
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={AlignLeft} />
+                    <input className="av-field-input" type="text" placeholder="Biographie"
+                      value={bio} onChange={(e) => setBio(e.target.value)} />
+                  </div>
 
-            {/* ─────── ÉTAPE 2 ─────── */}
-            {view === "register" && step === 2 && (
-              <>
-                <h2 className="av-parch-title">Votre profil artiste</h2>
-                <div className="av-steps-indicator">
-                  <div className="av-step-dot av-step-dot--done" onClick={() => setStep(1)} />
-                  <div className="av-step-line av-step-line--done" />
-                  <div className="av-step-dot av-step-dot--active" />
-                </div>
+                  <DropdownPortal
+                    value={style}
+                    onChange={setStyle}
+                    open={dropOpen}
+                    setOpen={setDropOpen}
+                  />
 
-                <div className="av-field-wrap">
-                  <FieldIcon icon={AlignLeft} />
-                  <input className="av-field-input" type="text" placeholder="Biographie"
-                    value={bio} onChange={(e) => setBio(e.target.value)} />
-                </div>
+                  <div className="av-field-wrap">
+                    <FieldIcon icon={Camera} />
+                    <label className="av-photo-label">
+                      <span className="av-photo-text">{photo || "Choisir une photo"}</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="av-photo-input"
+                        onChange={handlePhotoChange}
+                        id="photo-upload"
+                      />
+                    </label>
+                  </div>
 
-                <DropdownPortal
-                  value={style}
-                  onChange={setStyle}
-                  open={dropOpen}
-                  setOpen={setDropOpen}
-                />
+                  {error && <p style={{ color: '#e74c3c', textAlign: 'center', fontSize: 12 }}>{error}</p>}
 
-                <div className="av-field-wrap">
-                  <FieldIcon icon={Camera} />
-                  <label className="av-photo-label">
-                    <span className="av-photo-text">{photo || "Choisir une photo"}</span>
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      className="av-photo-input"
-                      onChange={handlePhotoChange}
-                      id="photo-upload"
-                    />
-                  </label>
-                </div>
+                  <button type="submit" className="av-submit-btn" disabled={loading}>
+                    {loading ? "Inscription..." : "S'inscrire"}
+                  </button>
 
-                <button className="av-submit-btn">S'inscrire</button>
-
-                <button className="av-back-btn" onClick={() => setStep(1)}>
-                  <ChevronLeft size={14} strokeWidth={2} />
-                  <span>Retour</span>
-                </button>
-              </>
-            )}
-
+                  <button type="button" className="av-back-btn" onClick={() => setStep(1)}>
+                    <ChevronLeft size={14} strokeWidth={2} />
+                    <span>Retour</span>
+                  </button>
+                </>
+              )}
+            </form>
           </div>
         </div>
       </div>

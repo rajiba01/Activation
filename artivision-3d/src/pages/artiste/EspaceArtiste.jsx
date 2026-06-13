@@ -1,10 +1,14 @@
+// src/pages/artiste/EspaceArtiste.jsx
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/Headerartiste";
 import Footer from "../../components/Footer";
+import PaiementModal from "../../components/PaiementModal";
+import { authService } from "../../services/auth.service";
+import { purchaseService } from "../../services/purchase.service";
 import "../../styles/EspaceArtiste.css";
 
 // ─── SVG Icon Components ───────────────────────────────────────────────────────
-
 const Icon = {
   Palette: (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -122,22 +126,6 @@ const Icon = {
       <polyline points="9 18 15 12 9 6"/>
     </svg>
   ),
-  Users: (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-    </svg>
-  ),
-  Home: (props) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <polyline points="9 22 9 12 15 12 15 22"/>
-    </svg>
-  ),
 };
 
 const IC = ({ name, size = 18, style = {}, className = "" }) => {
@@ -147,7 +135,6 @@ const IC = ({ name, size = 18, style = {}, className = "" }) => {
 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
-
 const heroSlides = [
   {
     img: "/images/hero1.png",
@@ -215,7 +202,9 @@ const offres = [
 const chambres = [
   {
     nom: "Atelier",
-    prix: "29 DT / mois",
+    subscription_type: "atelier",
+    prix: 29,
+    prixText: "29 DT / mois",
     iconName: "Palette",
     color: "#F1D3C0",
     accent: "#8B2020",
@@ -228,10 +217,14 @@ const chambres = [
       "Support par email",
     ],
     badge: null,
+    maxOeuvres: 10,
+    maxChambres: 1,
   },
   {
     nom: "Galerie",
-    prix: "69 DT / mois",
+    subscription_type: "galerie",
+    prix: 69,
+    prixText: "69 DT / mois",
     iconName: "Building",
     color: "#2C0A0A",
     accent: "#C9A040",
@@ -245,10 +238,14 @@ const chambres = [
       "Revenus droits d'entrée",
     ],
     badge: "Populaire",
+    maxOeuvres: 40,
+    maxChambres: 3,
   },
   {
     nom: "Musée",
-    prix: "149 DT / mois",
+    subscription_type: "musee",
+    prix: 149,
+    prixText: "149 DT / mois",
     iconName: "Sparkle",
     color: "#3A1A0A",
     accent: "#F5D98B",
@@ -263,38 +260,16 @@ const chambres = [
       "Gestionnaire de compte dédié",
     ],
     badge: "Premium",
-  },
-];
-
-const temoignages = [
-  {
-    name: "Leila Mansouri",
-    avatar: "https://i.pravatar.cc/60?img=32",
-    metier: "Peintre contemporaine",
-    stars: 5,
-    text: "ARTIVISION a transformé ma façon de vendre. Mes œuvres touchent maintenant des collectionneurs en France, Belgique et Canada. C'est incroyable.",
-  },
-  {
-    name: "Karim Belhadj",
-    avatar: "https://i.pravatar.cc/60?img=68",
-    metier: "Sculpteur & Designer",
-    stars: 5,
-    text: "Le dashboard m'aide à comprendre ce que les visiteurs aiment vraiment. J'ai doublé mes ventes en trois mois grâce aux statistiques.",
-  },
-  {
-    name: "Sofia Reyes",
-    avatar: "https://i.pravatar.cc/60?img=47",
-    metier: "Photographe d'art",
-    stars: 5,
-    text: "La fonctionnalité d'essai virtuel est révolutionnaire. Les acheteurs voient mes photos chez eux avant d'acheter — le taux de conversion a explosé.",
+    maxOeuvres: -1,
+    maxChambres: -1,
   },
 ];
 
 const etapes = [
   { num: "01", titre: "Créez votre compte", desc: "Inscription rapide, validation par notre équipe sous 24h." },
   { num: "02", titre: "Choisissez votre espace", desc: "Sélectionnez la formule qui correspond à vos ambitions." },
-  { num: "03", titre: "Ajoutez vos œuvres", desc: "Téléversez images HD, descriptions et prix en quelques clics." },
-  { num: "04", titre: "Accueillez vos visiteurs", desc: "Votre galerie 3D est en ligne. Les revenus arrivent automatiquement." },
+  { num: "03", titre: "Payez votre abonnement", desc: "Paiement sécurisé par carte bancaire." },
+  { num: "04", titre: "Créez votre galerie", desc: "Ajoutez votre première galerie et commencez à exposer." },
 ];
 
 const dashboardItems = [
@@ -304,8 +279,9 @@ const dashboardItems = [
   { iconName: "Bot",        titre: "Assistant IA Personnel",     desc: "Posez vos questions à Muse IA : performances, prix optimal, recommandations.",                        color: "#2C4A8B" },
 ];
 
-// ─── Scrollbar ────────────────────────────────────────────────────────────────
+// ========== COMPOSANTS ENFANTS ==========
 
+// ─── Scrollbar ────────────────────────────────────────────────────────────────
 function CustomScrollbar() {
   const thumbRef = useRef(null);
   const isDragging = useRef(false);
@@ -357,7 +333,6 @@ function CustomScrollbar() {
 }
 
 // ─── Hero Carousel ────────────────────────────────────────────────────────────
-
 function HeroCarousel() {
   const [current, setCurrent] = useState(0);
   const total = heroSlides.length;
@@ -408,12 +383,11 @@ function HeroCarousel() {
 }
 
 // ─── Star Rating ──────────────────────────────────────────────────────────────
-
 function Stars({ n }) {
   return (
     <div className="ea-stars">
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} className={i < n ? "ea-star ea-star--on" : "ea-star"}>
+        <span key={i} className={i < n ? "ea-star ea-star--on" : "ea-star"} >
           <IC name="Star" size={14} />
         </span>
       ))}
@@ -422,7 +396,6 @@ function Stars({ n }) {
 }
 
 // ─── Chatbot ─────────────────────────────────────────────────────────────────
-
 const initMessages = [
   { role: "assistant", text: "Bonjour ! Je suis Muse IA. Comment puis-je vous aider à rejoindre ARTIVISION ?" },
 ];
@@ -482,7 +455,6 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
 
   return (
     <>
-      {/* FAB */}
       {!open && (
         <button className="ea-fab" onClick={() => setOpen(true)}>
           <span className="ea-fab__icon"><IC name="Sparkle" size={16} /></span>
@@ -490,7 +462,6 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
         </button>
       )}
 
-      {/* Panel */}
       {open && (
         <div className="ea-chat">
           <div className="ea-chat__header">
@@ -546,14 +517,153 @@ Réponds en français, de façon chaleureuse, concise et enthousiaste. Maximum 3
   );
 }
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+// ─── Composant Carte Abonnement ───────────────────────────────────────────────
+function AbonnementCard({ chambre, onSelect }) {
+  return (
+    <div className={`ea-chambre-card ${chambre.badge === "Populaire" ? "ea-chambre-card--featured" : ""}`}
+      style={{ "--accent": chambre.accent }}>
+      {chambre.badge && (
+        <div className="ea-chambre-badge"
+          style={{ background: chambre.badge === "Premium" ? "linear-gradient(135deg,#C9A040,#F5D98B)" : "linear-gradient(135deg,#8B2020,#C03030)" }}>
+          {chambre.badge}
+        </div>
+      )}
+      <div className="ea-chambre-top" style={{ background: chambre.color }}>
+        <span className="ea-chambre-icon" style={{ color: chambre.accent }} >
+          <IC name={chambre.iconName} size={28} />
+        </span>
+        <h3 className="ea-chambre-nom" style={{ color: chambre.accent }}>{chambre.nom}</h3>
+        <p className="ea-chambre-prix" style={{ color: chambre.accent }}>{chambre.prixText}</p>
+      </div>
+      <div className="ea-chambre-body">
+        <p className="ea-chambre-desc">{chambre.desc}</p>
+        <ul className="ea-chambre-features">
+          {chambre.features.map((f, j) => (
+            <li key={j} className="ea-chambre-feature">
+              <span className="ea-check" style={{ color: chambre.accent }} >
+                <IC name="Check" size={13} />
+              </span> {f}
+            </li>
+          ))}
+        </ul>
+        <button 
+          className="ea-chambre-cta"
+          onClick={() => onSelect(chambre)}
+          style={{ background: `linear-gradient(135deg, ${chambre.accent}dd, ${chambre.accent})` }}>
+          Choisir {chambre.nom}
+        </button>
+      </div>
+    </div>
+  );
+}
 
+// ========== COMPOSANT PRINCIPAL ==========
 export default function EspaceArtiste() {
+  const navigate = useNavigate();
   const [chambreFilter, setChambreFilter] = useState("tous");
+  const [selectedAbonnement, setSelectedAbonnement] = useState(null);
+  const [showPaiementModal, setShowPaiementModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState(0);
+  const [artistInfo, setArtistInfo] = useState({ name: "", email: "", avatar: "" });
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [temoignages, setTemoignages] = useState([
+    {
+      name: "Leila Mansouri",
+      avatar: "https://i.pravatar.cc/60?img=32",
+      metier: "Peintre contemporaine",
+      stars: 5,
+      text: "ARTIVISION a transformé ma façon de vendre. Mes œuvres touchent maintenant des collectionneurs en France, Belgique et Canada. C'est incroyable.",
+    },
+    {
+      name: "Karim Belhadj",
+      avatar: "https://i.pravatar.cc/60?img=68",
+      metier: "Sculpteur & Designer",
+      stars: 5,
+      text: "Le dashboard m'aide à comprendre ce que les visiteurs aiment vraiment. J'ai doublé mes ventes en trois mois grâce aux statistiques.",
+    },
+    {
+      name: "Sofia Reyes",
+      avatar: "https://i.pravatar.cc/60?img=47",
+      metier: "Photographe d'art",
+      stars: 5,
+      text: "La fonctionnalité d'essai virtuel est révolutionnaire. Les acheteurs voient mes photos chez eux avant d'acheter — le taux de conversion a explosé.",
+    },
+  ]);
+
+  // Charger le nom réel de l'artiste connecté
+  useEffect(() => {
+    const loadArtistInfo = async () => {
+      try {
+        const response = await authService.getCurrentUser();
+        const userData = response.data?.data || response.data;
+        const prenom = userData.prenom || userData.Prenom || "";
+        const nom = userData.nom || userData.Nom || "";
+        const email = userData.email || "";
+        
+        setArtistInfo({
+          name: `${prenom} ${nom}`.trim() || "Artiste",
+          email: email,
+          avatar: `https://ui-avatars.com/api/?name=${prenom}+${nom}&background=C9A040&color=fff`
+        });
+      } catch (error) {
+        console.error("Erreur chargement artiste:", error);
+        setArtistInfo({
+          name: "Artiste",
+          email: "",
+          avatar: "https://i.pravatar.cc/80?img=47"
+        });
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    loadArtistInfo();
+  }, []);
 
   const filteredChambres = chambreFilter === "tous"
     ? chambres
     : chambres.filter(c => c.nom.toLowerCase() === chambreFilter);
+
+  const handleSelectAbonnement = (abonnement) => {
+    setSelectedAbonnement(abonnement);
+    setPaymentAmount(abonnement.prix);
+    setShowPaiementModal(true);
+  };
+
+  const handlePaiementSuccess = async () => {
+    setShowPaiementModal(false);
+    
+    try {
+      const response = await purchaseService.purchaseArtistSubscription(
+        selectedAbonnement.subscription_type
+      );
+      
+      console.log("✅ Abonnement acheté:", response.data);
+      
+      if (response.data?.status === 'success') {
+        localStorage.setItem('artist_subscription', JSON.stringify({
+          nom: selectedAbonnement.nom,
+          type: selectedAbonnement.subscription_type,
+          prix: selectedAbonnement.prix,
+          maxOeuvres: selectedAbonnement.maxOeuvres,
+          maxChambres: selectedAbonnement.maxChambres,
+          date_debut: new Date().toISOString(),
+          date_fin: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          actif: true
+        }));
+        
+        alert(`✅ Abonnement ${selectedAbonnement.nom} activé avec succès !\n\nVous pouvez maintenant créer vos galeries.`);
+        navigate("/mes-chambres");
+      }
+    } catch (error) {
+      console.error("❌ Erreur:", error);
+      alert(error.response?.data?.error || "Erreur lors de l'achat");
+    }
+  };
+
+  const getUserName = () => {
+    if (loadingUser) return "Chargement...";
+    return artistInfo.name || "Artiste";
+  };
 
   return (
     <>
@@ -615,15 +725,14 @@ export default function EspaceArtiste() {
           </div>
         </section>
 
-        {/* ── TYPES DE CHAMBRES ── */}
+        {/* ── TYPES DE CHAMBRES (ABONNEMENTS) ── */}
         <section id="chambres" className="ea-section ea-chambres">
           <div className="ea-section__head">
             <p className="ea-eyebrow">Nos Formules</p>
-            <h2 className="ea-section__title">Choisissez votre espace</h2>
+            <h2 className="ea-section__title">Choisissez votre abonnement, <em>{getUserName()}</em></h2>
             <p className="ea-section__sub">Des formules adaptées à chaque niveau, du jeune artiste au maître confirmé.</p>
           </div>
 
-          {/* Filtres */}
           <div className="ea-filter-row">
             {["tous", "atelier", "galerie", "musée"].map(f => (
               <button key={f} className={`ea-filter-btn ${chambreFilter === f ? "ea-filter-btn--active" : ""}`}
@@ -635,38 +744,7 @@ export default function EspaceArtiste() {
 
           <div className="ea-chambres__grid">
             {filteredChambres.map((c, i) => (
-              <div key={i} className={`ea-chambre-card ${c.badge === "Populaire" ? "ea-chambre-card--featured" : ""}`}
-                style={{ "--accent": c.accent }}>
-                {c.badge && (
-                  <div className="ea-chambre-badge"
-                    style={{ background: c.badge === "Premium" ? "linear-gradient(135deg,#C9A040,#F5D98B)" : "linear-gradient(135deg,#8B2020,#C03030)" }}>
-                    {c.badge}
-                  </div>
-                )}
-                <div className="ea-chambre-top" style={{ background: c.color }}>
-                  <span className="ea-chambre-icon" style={{ color: c.accent }}>
-                    <IC name={c.iconName} size={28} />
-                  </span>
-                  <h3 className="ea-chambre-nom" style={{ color: c.accent }}>{c.nom}</h3>
-                  <p className="ea-chambre-prix" style={{ color: c.accent }}>{c.prix}</p>
-                </div>
-                <div className="ea-chambre-body">
-                  <p className="ea-chambre-desc">{c.desc}</p>
-                  <ul className="ea-chambre-features">
-                    {c.features.map((f, j) => (
-                      <li key={j} className="ea-chambre-feature">
-                        <span className="ea-check" style={{ color: c.accent }}>
-                          <IC name="Check" size={13} />
-                        </span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <a href="/inscription-artiste" className="ea-chambre-cta"
-                    style={{ background: `linear-gradient(135deg, ${c.accent}dd, ${c.accent})` }}>
-                    Choisir {c.nom}
-                  </a>
-                </div>
-              </div>
+              <AbonnementCard key={i} chambre={c} onSelect={handleSelectAbonnement} />
             ))}
           </div>
         </section>
@@ -707,7 +785,12 @@ export default function EspaceArtiste() {
                 <Stars n={t.stars} />
                 <p className="ea-temoignage-text">"{t.text}"</p>
                 <div className="ea-temoignage-author">
-                  <img src={t.avatar} alt={t.name} className="ea-temoignage-avatar" />
+                  <img 
+                    src={t.avatar} 
+                    alt={t.name} 
+                    className="ea-temoignage-avatar"
+                    onError={(e) => { e.target.src = `https://i.pravatar.cc/60?img=${i + 32}`; }}
+                  />
                   <div>
                     <p className="ea-temoignage-name">{t.name}</p>
                     <p className="ea-temoignage-metier">{t.metier}</p>
@@ -736,6 +819,19 @@ export default function EspaceArtiste() {
       <Footer />
       <ChatbotFloat />
       <CustomScrollbar />
+
+      {/* Modal de paiement pour l'abonnement */}
+      {showPaiementModal && selectedAbonnement && (
+        <PaiementModal
+          isOpen={showPaiementModal}
+          onClose={() => setShowPaiementModal(false)}
+          onSuccess={handlePaiementSuccess}
+          montant={paymentAmount}
+          description={`Abonnement ${selectedAbonnement.nom} - 1 mois`}
+          type="subscription"
+          role="artiste"
+        />
+      )}
     </>
   );
 }

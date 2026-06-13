@@ -1,5 +1,5 @@
 // src/pages/artiste/AjouterGalerie.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Header from "../../components/Headerartiste";
 import Footer from "../../components/Footer";
 import { useArtisteStore } from "../../store/useArtisteStore";
@@ -62,8 +62,6 @@ const decors = [
 ];
 
 // ─── Scrollbar ────────────────────────────────────────────────────────────────
-import { useEffect } from "react";
-
 function CustomScrollbar() {
   const thumbRef = useRef(null);
   const isDragging = useRef(false);
@@ -167,9 +165,10 @@ function StepIndicator({ current, steps }) {
 export default function AjouterGalerie() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   
-  // Récupérer la fonction ajouterChambre depuis le store
   const ajouterChambre = useArtisteStore((state) => state.ajouterChambre);
+  const loadChambres = useArtisteStore((state) => state.loadChambres);
 
   const [form, setForm] = useState({
     nom: "",
@@ -232,39 +231,40 @@ export default function AjouterGalerie() {
     setForm(f => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }));
   };
 
-  // ─── VALIDATION FINALE ET AJOUT DANS LE STORE ───
-  const handleSubmit = () => {
+  // Créer la galerie directement (sans paiement)
+  const handleCreateGalerie = async () => {
     if (!validate()) return;
     
-    // Récupérer le décor sélectionné
-    const selectedDecor = decors.find(d => d.id === form.decor);
+    setLoading(true);
     
-    // Créer l'objet chambre pour le store
+    // Récupérer l'abonnement depuis localStorage
+    const subscription = JSON.parse(localStorage.getItem('artist_subscription') || '{"type":"galerie"}');
+    
     const nouvelleChambre = {
       nom: form.nom,
-      description: form.description,
       localisation: form.localisation,
-      surface: `${form.surfaceX} × ${form.surfaceY} m`,
+      description: form.description,
+      surface_x: parseFloat(form.surfaceX),
+      surface_y: parseFloat(form.surfaceY),
       decor: form.decor,
-      prixEntree: parseFloat(form.prixVisiteur),
-      dureeAcces: form.duree,
-      nbOeuvresMax: parseInt(form.nbOeuvres),
-      tarifMensuel: parseFloat(form.tarif),
-      dateCreation: new Date().toISOString().split("T")[0],
-      nbVisiteursTotal: 0,
-      revenus: 0,
-      // Pour la 3D
-      width: parseFloat(form.surfaceX),
-      depth: parseFloat(form.surfaceY),
-      wallColor: selectedDecor?.wallColor || "#F5ECD7",
-      headerVariant: form.decor === "classique" ? "burg" : form.decor === "baroque" ? "gold" : "green",
+      tarif_mensuel: parseFloat(form.tarif),
+      nb_oeuvres_max: parseInt(form.nbOeuvres),
+      duree_acces: form.duree,
+      prix_visiteur: parseFloat(form.prixVisiteur),
+      status: 'published',
+      subscription_type: subscription.type || "galerie",
     };
     
-    // Ajouter au store Zustand
-    ajouterChambre(nouvelleChambre);
-    
-    // Afficher l'écran de succès
-    setSubmitted(true);
+    try {
+      await ajouterChambre(nouvelleChambre);
+      await loadChambres();
+      setSubmitted(true);
+    } catch (error) {
+      console.error("❌ Erreur création:", error);
+      alert("Erreur lors de la création de la galerie");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ─── Success screen ──
@@ -533,8 +533,12 @@ export default function AjouterGalerie() {
                 {step < steps.length - 1 ? (
                   <button className="ag-btn ag-btn--primary" onClick={next}>Suivant →</button>
                 ) : (
-                  <button className="ag-btn ag-btn--gold" onClick={handleSubmit}>
-                    <Icons.star /> Créer la galerie
+                  <button 
+                    className="ag-btn ag-btn--gold" 
+                    onClick={handleCreateGalerie}
+                    disabled={loading}
+                  >
+                    <Icons.star /> {loading ? "Création en cours..." : "Créer la galerie"}
                   </button>
                 )}
               </div>

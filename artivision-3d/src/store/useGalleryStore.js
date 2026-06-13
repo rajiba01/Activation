@@ -1,30 +1,48 @@
-import { create } from "zustand";
+// src/store/useGalleryStore.js
+import { create } from 'zustand';
 
 export const useGalleryStore = create((set) => ({
-  // Position et direction caméra
-  cameraPosition: [0, 1.7, 8],
-  cameraTarget: [0, 1.7, 0],
-
-  // Mode navigation
-  navMode: "auto", // "auto" | "manual"
+  // État de navigation
+  navMode: 'auto', // 'auto' ou 'manual'
   isPlaying: true,
-
-  // Salle active
-  activeRoom: 1, // 1 | 2 | 3
-
-  // Œuvre sélectionnée (clic)
-  selectedArtwork: null,
-
-  // Œuvres chargées depuis l'API
-  artworks: [],
-
+  
+  // État de l'avatar
+  avatarPosition: { x: -5, z: 3, y: 0 },
+  avatarTargetPoint: 0,
+  avatarWalking: false,
+  
+  // État du guide
+  guideActive: false,
+  guideMessage: null,
+  guideArtwork: null,
+  
+  // UI
+  panelOpen: true,
+  showMinimap: true,
+  showInstructions: true,
+  
   // Actions
   setNavMode: (mode) => set({ navMode: mode }),
-  togglePlay: () => set((s) => ({ isPlaying: !s.isPlaying })),
-  setCameraPosition: (pos) => set({ cameraPosition: pos }),
-  setCameraTarget: (tgt) => set({ cameraTarget: tgt }),
-  setSelectedArtwork: (artwork) => set({ selectedArtwork: artwork }),
-  clearSelectedArtwork: () => set({ selectedArtwork: null }),
-  setArtworks: (artworks) => set({ artworks }),
-  setActiveRoom: (room) => set({ activeRoom: room }),
+  setIsPlaying: (playing) => set({ isPlaying: playing }),
+  
+  setAvatarPosition: (position) => set({ avatarPosition: position }),
+  setAvatarTargetPoint: (index) => set({ avatarTargetPoint: index }),
+  setAvatarWalking: (walking) => set({ avatarWalking: walking }),
+  
+  setGuideMessage: (message, artwork = null) => set({ 
+    guideMessage: message, 
+    guideArtwork: artwork,
+    guideActive: !!message 
+  }),
+  clearGuideMessage: () => set({ 
+    guideMessage: null, 
+    guideArtwork: null,
+    guideActive: false 
+  }),
+  
+  setPanelOpen: (open) => set({ panelOpen: open }),
+  togglePanel: () => set((state) => ({ panelOpen: !state.panelOpen })),
+  
+  setShowMinimap: (show) => set({ showMinimap: show }),
+  setShowInstructions: (show) => set({ showInstructions: show }),
 }));

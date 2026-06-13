@@ -1,10 +1,13 @@
+// src/pages/login/InscriptionUser.jsx
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
-  User, AtSign, Mail, Lock, Calendar,
-  MapPin, Phone, ChevronLeft, ChevronRight,
+  User, AtSign, Mail, Lock,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import '../../styles/InscriptionUser.css';
+import { authService } from "../../services/auth.service";
+import { useNavigate } from "react-router-dom";
 
 // =============== CONSTANTES ===============
 const IMG = {
@@ -179,33 +182,27 @@ function ArtisticPreferences({ selected, onToggle }) {
 
 // =============== PAGE PRINCIPALE ===============
 export default function InscriptionUser() {
+  const navigate = useNavigate();
+  
   // États du formulaire
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [dateNaissance, setDateNaissance] = useState("");
-  const [ville, setVille] = useState("");
-  const [telephone, setTelephone] = useState("");
   const [selectedPreferences, setSelectedPreferences] = useState([]);
 
   // États UI
-  const [view, setView] = useState("register");
   const [step, setStep] = useState(1);
   const [ready, setReady] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // Initialisation
   useEffect(() => {
     const t = setTimeout(() => setReady(true), 60);
     return () => clearTimeout(t);
   }, []);
-
-  // Handlers
-  const switchView = (v) => {
-    setView(v);
-    setStep(1);
-  };
 
   const togglePreference = (pref) => {
     setSelectedPreferences(prev =>
@@ -215,20 +212,43 @@ export default function InscriptionUser() {
     );
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (view === "register" && step === 2) {
-      console.log("Inscription utilisateur:", {
-        nom, prenom, username, email, password,
-        dateNaissance, ville, telephone, selectedPreferences
-      });
-      alert("Inscription réussie !");
+    if (step === 2) {
+      setLoading(true);
+      setError("");
+      
+      try {
+        const userData = {
+          pseudo: username,
+          nom: nom,
+          prenom: prenom,
+          email: email,
+          mdp: password,
+        };
+        
+        console.log("📤 Envoi inscription visiteur:", userData);
+        
+        const response = await authService.registerUser(userData);
+        console.log("✅ Inscription visiteur réussie:", response.data);
+        
+        // Connexion automatique après inscription
+        const loginResponse = await authService.login(username, password);
+        if (loginResponse.data?.data?.access) {
+          localStorage.setItem('access_token', loginResponse.data.data.access);
+          localStorage.setItem('refresh_token', loginResponse.data.data.refresh);
+          navigate("/user-page");
+        }
+      } catch (error) {
+        console.error("❌ Erreur inscription:", error.response?.data || error);
+        setError(JSON.stringify(error.response?.data?.errors || error.response?.data));
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  // Validations
-  const canProceedStep1 = nom.trim() && prenom.trim() && username.trim() &&
-    email.trim() && password.trim();
+  const canProceedStep1 = nom.trim() && prenom.trim() && username.trim() && email.trim() && password.trim();
 
   return (
     <div className="av-root">
@@ -243,21 +263,11 @@ export default function InscriptionUser() {
         </div>
 
         <div className="av-left-content av-anim-fade-up">
-          {view === "login" ? (
-            <>
-            <p className="av-welcome-text">Bienvenue<br /> chez<br /> Artivision</p>
-            </>
-          ) : (
-            <>
- 
-      <p className="av-already-text">Vous avez un compte déjà?</p>
-      <button className="av-login-btn" onClick={() => switchView("login")}>
-        Se connecter
-      </button>
-    </>
-
-         
-          )}
+          <p className="av-welcome-text">Inscription<br /> Visiteur</p>
+          <p className="av-already-text">Vous avez déjà un compte?</p>
+          <button className="av-login-btn" onClick={() => navigate("/login")}>
+            Se connecter
+          </button>
         </div>
 
         <div className="av-socials av-anim-fade-up">
@@ -282,30 +292,8 @@ export default function InscriptionUser() {
 
           <div className="av-card-content">
             <form onSubmit={handleSubmit}>
-              {/* Connexion */}
-              {view === "login" && (
-                <>
-                  <h2 className="av-parch-title">Connectez-vous</h2>
-                  <div className="av-field-wrap">
-                    <FieldIcon icon={Mail} />
-                    <input className="av-field-input" type="email" placeholder="Email ou username" />
-                  </div>
-                  <div className="av-field-wrap">
-                    <FieldIcon icon={Lock} />
-                    <input className="av-field-input" type="password" placeholder="Mot de passe" />
-                  </div>
-                  <button type="submit" className="av-submit-btn">Se connecter</button>
-                  <p className="av-switch-link">
-                    Pas encore de compte ?{" "}
-                    <span className="av-switch-anchor" onClick={() => switchView("register")}>
-                      S'inscrire
-                    </span>
-                  </p>
-                </>
-              )}
-
-              {/* Inscription - Étape 1 */}
-              {view === "register" && step === 1 && (
+              {/* Étape 1 - Informations personnelles */}
+              {step === 1 && (
                 <>
                   <h2 className="av-parch-title">Inscription membre</h2>
                   <div className="av-steps-indicator">
@@ -356,8 +344,8 @@ export default function InscriptionUser() {
                 </>
               )}
 
-              {/* Inscription - Étape 2 - Uniquement préférences artistiques */}
-              {view === "register" && step === 2 && (
+              {/* Étape 2 - Préférences artistiques */}
+              {step === 2 && (
                 <>
                   <h2 className="av-parch-title">Choisissez vos styles artistiques préférés</h2>
                   <div className="av-steps-indicator">
@@ -379,12 +367,14 @@ export default function InscriptionUser() {
                     </div>
                   </div>
 
+                  {error && <p style={{ color: '#e74c3c', textAlign: 'center', fontSize: 12 }}>{error}</p>}
+
                   <button
                     type="submit"
-                    className={`av-submit-btn ${selectedPreferences.length === 0 ? 'av-submit-btn--disabled' : ''}`}
-                    disabled={selectedPreferences.length === 0}
+                    className={`av-submit-btn ${selectedPreferences.length === 0 || loading ? 'av-submit-btn--disabled' : ''}`}
+                    disabled={selectedPreferences.length === 0 || loading}
                   >
-                    S'inscrire
+                    {loading ? "Inscription..." : "S'inscrire"}
                   </button>
 
                   <button type="button" className="av-back-btn" onClick={() => setStep(1)}>

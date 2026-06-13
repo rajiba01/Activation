@@ -1,23 +1,72 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import "../../styles/Meschambres.css";
+// Ajouter Icons au début du fichier (après les imports)
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";  // ← AJOUTER useLocation
+
 import { useArtisteStore } from "../../store/useArtisteStore";
+import "../../styles/Meschambres.css";
 
-const ARTIST = {
-  name: "Ariana Soghra",
-  avatar: "https://i.pravatar.cc/80?img=47",
-  abonnement: "Premium",
-  depuis: "Janvier 2024",
+// ========== AJOUTER LES ICÔNES (copiées de DashboardArtiste) ==========
+const Icons = {
+  museLogo: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z" fill="currentColor"/>
+    </svg>
+  ),
+  dashboardIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
+  artworksIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" />
+    </svg>
+  ),
+  gallery: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 9L12 15L21 9L12 3L3 9Z" />
+      <path d="M5 12V18L12 22L19 18V12" />
+    </svg>
+  ),
+  commande: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 2L3 6V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V6L18 2H6Z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10C16 12.2 14.2 14 12 14C9.8 14 8 12.2 8 10" />
+    </svg>
+  ),
+  payment: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+      <circle cx="18" cy="16" r="1" fill="currentColor" />
+    </svg>
+  ),
+  ai: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 2L15.5 9.5L23 11L17 16.5L18.5 24L12 20L5.5 24L7 16.5L1 11L8.5 9.5L12 2Z" />
+    </svg>
+  ),
+  settings: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15C19.2 15.6 18.9 16.2 18.5 16.7L19.5 18.3L18.3 19.5L16.7 18.5C16.2 18.9 15.6 19.2 15 19.4L14.5 21H9.5L9 19.4C8.4 19.2 7.8 18.9 7.3 18.5L5.7 19.5L4.5 18.3L5.5 16.7C5.1 16.2 4.8 15.6 4.6 15L3 14.5V9.5L4.6 9C4.8 8.4 5.1 7.8 5.5 7.3L4.5 5.7L5.7 4.5L7.3 5.5C7.8 5.1 8.4 4.8 9 4.6L9.5 3H14.5L15 4.6C15.6 4.8 16.2 5.1 16.7 5.5L18.3 4.5L19.5 5.7L18.5 7.3C18.9 7.8 19.2 8.4 19.4 9L21 9.5V14.5L19.4 15Z" />
+    </svg>
+  ),
 };
-
-const NAV_ITEMS = [
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="3" width="20" height="16" rx="2"/><path d="M8 21h8M12 17v4"/></svg>, label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-6 9 6v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Mes Chambres", id: "chambre", path: "/mes-chambres" },
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: "Statistiques", id: "stats", path: "/dashboard-artiste" },
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/></svg>, label: "Assistant IA", id: "ia", path: "/dashboard-artiste" },
-  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>, label: "Paramètres", id: "settings", path: "/dashboard-artiste" },
-];
+const navItems = [
+  { icon: "dashboardIcon", label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
+  { icon: "artworksIcon", label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
+  { icon: "gallery", label: "Mes Galeries", id: "chambre", path: "/mes-chambres" },
+  { icon: "commande", label: "Commandes", id: "commandes", path: "/commandes" },
+  { icon: "payment", label: "Mes Paiements", id: "paiements", path: "/mes-paiements" },
+  { icon: "ai", label: "Assistant IA", id: "ia", path: null },
+  { icon: "settings", label: "Paramètres", id: "settings", path: null },
+];;
 
 // ─── Custom Scrollbar ──────────────────────────────────────────────────────────
 function CustomScrollbar() {
@@ -68,41 +117,54 @@ function CustomScrollbar() {
 }
 
 // ─── Sidebar ───────────────────────────────────────────────────────────────────
+// ========== SIDEBAR MODIFIÉE ==========
 function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isActive = (path) => {
+    if (!path) return false;
+    return location.pathname === path;
+  };
+
   return (
     <aside className="mc-sidebar">
-      <div className="mc-sidebar__logo">
-        <img src="/images/logo_artivision.png" alt="Artivision" className="mc-sidebar__logo-img"
-          onError={e => { e.target.style.display = "none"; }} />
+      <div className="sidebar-logo">
+        <span className="logo-mark"><Icons.museLogo /></span>
+        <span className="logo-text">ARTIVISION</span>
       </div>
-      <div className="mc-sidebar__artist">
-        <img src={ARTIST.avatar} alt={ARTIST.name} className="mc-sidebar__avatar"
-          onError={e => { e.target.src = "https://i.pravatar.cc/80?img=47"; }} />
+
+      <div className="sidebar-artist">
+        <img src="https://i.pravatar.cc/80?img=47" alt="Artiste" className="sidebar-avatar" />
         <div>
-          <p className="mc-sidebar__name">{ARTIST.name}</p>
-          <p className="mc-sidebar__role">Artiste • {ARTIST.abonnement}</p>
+          <p className="sidebar-name">Mon Profil</p>
+          <p className="sidebar-role">Artiste</p>
         </div>
       </div>
-      <nav className="mc-sidebar__nav">
-        {NAV_ITEMS.map(item => (
-          <button key={item.id}
-            className={`mc-nav-item ${item.id === "chambre" ? "mc-nav-item--active" : ""}`}
-            onClick={() => navigate(item.path)}>
-            <span className="mc-nav-icon">{item.icon}</span>
-            <span className="mc-nav-label">{item.label}</span>
-            {item.id === "chambre" && <span className="mc-nav-indicator" />}
+
+      <nav className="sidebar-nav">
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            className={`nav-item ${isActive(item.path) ? "nav-item--active" : ""}`}
+            onClick={() => item.path && navigate(item.path)}
+          >
+            <span className="nav-icon">{Icons[item.icon] && Icons[item.icon]()}</span>
+            <span className="nav-label">{item.label}</span>
+            {isActive(item.path) && <span className="nav-indicator" />}
           </button>
         ))}
       </nav>
-      <div className="mc-sidebar__footer">
-        <span className="mc-badge">{ARTIST.abonnement}</span>
-        <p className="mc-sidebar__since">Depuis {ARTIST.depuis}</p>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-abonnement">
+          <span className="abonnement-badge">Actif</span>
+          <p className="abonnement-info">Abonnement actif</p>
+        </div>
       </div>
     </aside>
   );
 }
-
 // ─── Oeuvre Detail Drawer ──────────────────────────────────────────────────────
 function OeuvreDetailPanel({ oeuvre, onClose, onNavigateToEdit }) {
   if (!oeuvre) return null;
@@ -303,7 +365,8 @@ export default function MesChambres() {
   const chambres = useArtisteStore((state) => state.chambres);
   const oeuvres = useArtisteStore((state) => state.oeuvres);
   const supprimerChambre = useArtisteStore((state) => state.supprimerChambre);
-
+  const loadChambres = useArtisteStore((state) => state.loadChambres); // ← AJOUTE CETTE LIGNE
+  const loadOeuvres = useArtisteStore((state) => state.loadOeuvres);   // ← AJOUTE CETTE LIGNE
   const [selectedOeuvre, setSelectedOeuvre] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState({ msg: "", show: false });
@@ -325,11 +388,13 @@ export default function MesChambres() {
     setSelectedOeuvre(null);
     navigate("/mes-oeuvres", { state: { editOeuvreId: oeuvre.id } });
   };
+  useEffect(() => {
+    console.log("🔄 Chargement des galeries...");
+    loadChambres();
+    loadOeuvres();
+  }, []);
 
-  // ✅ Fonction pour récupérer les œuvres d'une chambre (sans créer de boucle)
-  const getOeuvresForChambre = useCallback((galerieId) => {
-    return oeuvres.filter(o => o.galerieId === galerieId && o.statut === "Publié");
-  }, [oeuvres]);
+const getOeuvresByChambre = useArtisteStore((state) => state.getOeuvresByChambre);
 
   const totalOeuvres = oeuvres.length;
   const totalVisiteurs = chambres.reduce((s, c) => s + (c.nbVisiteursTotal || 0), 0);
@@ -397,7 +462,7 @@ export default function MesChambres() {
               <div key={c.id} style={{ animationDelay: `${idx * 0.08}s` }}>
                 <ChambresCard
                   chambre={c}
-                  oeuvres={getOeuvresForChambre(c.id)}
+                  oeuvres={getOeuvresByChambre(c.id)}  // ← Utilisez la fonction du store
                   onOeuvreClick={setSelectedOeuvre}
                   onDeleteChambre={handleDeleteChambre}
                   onAddOeuvre={() => navigate("/mes-oeuvres")}

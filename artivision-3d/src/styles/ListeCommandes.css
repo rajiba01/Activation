@@ -556,3 +556,86 @@ body::-webkit-scrollbar {
   .lc-filters { gap: 6px; }
   .lc-filter-btn { padding: 7px 13px; font-size: 12px; }
 }
+/* Ajouter à ListeCommandes.css */
+
+.lc-loading {
+  text-align: center;
+  padding: 60px;
+  color: #8B6030;
+}
+
+.lc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.lc-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.lc-otp-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 8px;
+  border: 1px solid rgba(201,160,64,0.3);
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.lc-error {
+  color: #e74c3c;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.lc-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.lc-modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.lc-modal-actions button:first-child {
+  background: #e0e0e0;
+}
+
+.lc-modal-actions button:last-child {
+  background: #C9A040;
+  color: white;
+}
+
+.lc-action-btn--deliver {
+  background: #3A6B35;
+  color: white;
+}
+
+.lc-completed {
+  color: #3A6B35;
+  font-weight: bold;
+}
+
+.lc-pending {
+  color: #C9A040;
+  font-weight: bold;
+}

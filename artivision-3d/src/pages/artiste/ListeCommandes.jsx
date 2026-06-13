@@ -1,28 +1,14 @@
+// src/pages/artiste/ListeCommandes.jsx
 import { useState, useEffect, useRef } from "react";
 import Header from "../../components/Headerartiste";
 import Footer from "../../components/Footer";
+import { commandeService } from "../../services/commande.service";
+import { oeuvreService } from "../../services/oeuvre.service";
 import "../../styles/ListeCommandes.css";
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-const COMMANDES_INIT = [
-  { id: "0001", oeuvre: "Lumière d'Automne",  email: "wael@gmail.com",   statut: "Livré",      montant: 450,  date: "2026-03-01", codeOn: false, confirmed: true  },
-  { id: "0002", oeuvre: "Reflets Bleutés",    email: "sarah@gmail.com",  statut: "En attente", montant: 280,  date: "2026-03-05", codeOn: true,  confirmed: false },
-  { id: "0003", oeuvre: "Portail Doré",       email: "karim@gmail.com",  statut: "Prêt",       montant: 720,  date: "2026-03-08", codeOn: false, confirmed: true  },
-  { id: "0004", oeuvre: "Nuit Parisienne",    email: "leila@gmail.com",  statut: "En attente", montant: 190,  date: "2026-03-10", codeOn: true,  confirmed: false },
-  { id: "0005", oeuvre: "Aube Rosée",         email: "omar@gmail.com",   statut: "Prêt",       montant: 340,  date: "2026-03-11", codeOn: false, confirmed: false },
-  { id: "0006", oeuvre: "Horizon Violet",     email: "nina@gmail.com",   statut: "Livré",      montant: 560,  date: "2026-03-12", codeOn: false, confirmed: true  },
-  { id: "0007", oeuvre: "Tempête d'Or",       email: "adam@gmail.com",   statut: "En attente", montant: 820,  date: "2026-03-13", codeOn: true,  confirmed: false },
-  { id: "0008", oeuvre: "Silence Blanc",      email: "rima@gmail.com",   statut: "Livré",      montant: 310,  date: "2026-03-14", codeOn: false, confirmed: true  },
-  { id: "0009", oeuvre: "Jardin Céleste",     email: "yass@gmail.com",   statut: "Prêt",       montant: 490,  date: "2026-03-15", codeOn: false, confirmed: false },
-  { id: "0010", oeuvre: "Miroir d'Encre",     email: "lina@gmail.com",   statut: "En attente", montant: 650,  date: "2026-03-16", codeOn: true,  confirmed: false },
-  { id: "0011", oeuvre: "Flamme Bleue",       email: "sami@gmail.com",   statut: "Livré",      montant: 230,  date: "2026-03-17", codeOn: false, confirmed: true  },
-  { id: "0012", oeuvre: "Cascade Dorée",      email: "maya@gmail.com",   statut: "Prêt",       montant: 780,  date: "2026-03-18", codeOn: false, confirmed: true  },
-];
-
-const STATUTS = ["Tous", "En attente", "Prêt", "Livré"];
+const STATUTS = ["Tous", "En attente", "Confirmée", "Livré"];
 const PER_PAGE = 6;
 
-// ─── Scrollbar ────────────────────────────────────────────────────────────────
 function CustomScrollbar() {
   const thumbRef = useRef(null);
   const isDragging = useRef(false);
@@ -38,7 +24,7 @@ function CustomScrollbar() {
       const thumbH = Math.max(ratio * 100, 8);
       const thumbTop = (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbH);
       thumb.style.height = `${thumbH}vh`;
-      thumb.style.top    = `${thumbTop}vh`;
+      thumb.style.top = `${thumbTop}vh`;
     };
     window.addEventListener("scroll", update);
     update();
@@ -47,10 +33,10 @@ function CustomScrollbar() {
 
   const onMouseDown = (e) => {
     isDragging.current = true;
-    dragStart.current  = e.clientY;
+    dragStart.current = e.clientY;
     scrollStart.current = window.scrollY;
     window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup",   onMouseUp);
+    window.addEventListener("mouseup", onMouseUp);
   };
   const onMouseMove = (e) => {
     if (!isDragging.current) return;
@@ -61,7 +47,7 @@ function CustomScrollbar() {
   const onMouseUp = () => {
     isDragging.current = false;
     window.removeEventListener("mousemove", onMouseMove);
-    window.removeEventListener("mouseup",   onMouseUp);
+    window.removeEventListener("mouseup", onMouseUp);
   };
 
   return (
@@ -71,95 +57,182 @@ function CustomScrollbar() {
   );
 }
 
-// ─── Statut Badge ─────────────────────────────────────────────────────────────
 function StatutBadge({ statut }) {
   const map = {
-    "Livré":      { cls: "lc-badge--livre",    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> },
-    "En attente": { cls: "lc-badge--attente",  icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> },
-    "Prêt":       { cls: "lc-badge--pret",     icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle></svg> },
+    "Livré":      { cls: "lc-badge--livre",    icon: "✓", color: "#3A6B35" },
+    "Confirmée":  { cls: "lc-badge--confirme", icon: "✓", color: "#3A6B35" },
+    "En attente": { cls: "lc-badge--attente",  icon: "⏳", color: "#C9A040" },
   };
-  const { cls, icon } = map[statut] || {};
+  const { cls, icon, color } = map[statut] || { cls: "", icon: "📋", color: "#8B6030" };
   return (
-    <span className={`lc-badge ${cls}`}>
-      <span className="lc-badge__dot" /> {icon} {statut}
+    <span className={`lc-badge ${cls}`} style={{ background: `${color}15`, color: color, border: `1px solid ${color}30` }}>
+      <span className="lc-badge__dot" style={{ background: color }} /> {icon} {statut}
     </span>
   );
 }
 
-// ─── Toggle Switch ────────────────────────────────────────────────────────────
-function Toggle({ value, onChange }) {
-  return (
-    <button
-      className={`lc-toggle ${value ? "lc-toggle--on" : ""}`}
-      onClick={() => onChange(!value)}
-      aria-label="Toggle code"
-    >
-      <span className="lc-toggle__thumb" />
-    </button>
-  );
-}
-
-// ─── Toast Notification ───────────────────────────────────────────────────────
 function Toast({ msg, visible }) {
   return (
     <div className={`lc-toast ${visible ? "lc-toast--visible" : ""}`}>
-      <span className="lc-toast__icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
-        </svg>
-      </span> {msg}
+      <span className="lc-toast__icon">✨</span> {msg}
     </div>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+function OtpModal({ isOpen, onClose, onConfirm, commande }) {
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!isOpen) return null;
+
+  const handleConfirm = async () => {
+    if (otp.length !== 6) {
+      setError("Le code OTP doit contenir 6 chiffres");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await onConfirm(commande.id, otp);
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.error || "Code OTP invalide");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="lc-modal-overlay" onClick={onClose}>
+      <div className="lc-modal" onClick={e => e.stopPropagation()}>
+        <h3>🔐 Validation OTP</h3>
+        <p>Entrez le code à 6 chiffres :</p>
+        <input
+          type="text"
+          placeholder="000000"
+          maxLength={6}
+          value={otp}
+          onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+          className="lc-otp-input"
+        />
+        {error && <p className="lc-error">{error}</p>}
+        <div className="lc-modal-actions">
+          <button onClick={onClose}>Annuler</button>
+          <button onClick={handleConfirm} disabled={loading}>
+            {loading ? "Vérification..." : "Confirmer"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ListeCommandes() {
-  const [commandes, setCommandes] = useState(COMMANDES_INIT);
-  const [search,    setSearch]    = useState("");
-  const [filtre,    setFiltre]    = useState("Tous");
-  const [page,      setPage]      = useState(1);
-  const [sortCol,   setSortCol]   = useState(null);
-  const [sortDir,   setSortDir]   = useState("asc");
-  const [toast,     setToast]     = useState({ msg: "", visible: false });
+  const [commandes, setCommandes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [filtre, setFiltre] = useState("Tous");
+  const [page, setPage] = useState(1);
+  const [sortCol, setSortCol] = useState(null);
+  const [sortDir, setSortDir] = useState("asc");
+  const [toast, setToast] = useState({ msg: "", visible: false });
+  const [selectedOtpCommand, setSelectedOtpCommand] = useState(null);
+  const [oeuvresMap, setOeuvresMap] = useState({});
 
   const showToast = (msg) => {
     setToast({ msg, visible: true });
     setTimeout(() => setToast(t => ({ ...t, visible: false })), 2800);
   };
 
-  // ── Actions ──
-  const toggleCode = (id) => {
-    setCommandes(cs => cs.map(c => c.id === id ? { ...c, codeOn: !c.codeOn } : c));
-  };
-
-  const envoyerCode = (id) => {
-    const c = commandes.find(c => c.id === id);
-    showToast(`Code envoyé à ${c.email} ✓`);
-  };
-
-  const confirmer = (id) => {
-    setCommandes(cs => cs.map(c =>
-      c.id === id ? { ...c, confirmed: true, statut: "Livré" } : c
-    ));
-    showToast("Commande confirmée et marquée Livrée ✓");
-  };
-
-  // ── Sort ──
   const handleSort = (col) => {
-    if (sortCol === col) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortCol(col); setSortDir("asc"); }
-    setPage(1);
+    if (sortCol === col) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortCol(col);
+      setSortDir("asc");
+    }
   };
 
-  // ── Filter + Search ──
+  const loadCommandes = async () => {
+    try {
+      const response = await commandeService.getAll();
+      return response.data || [];
+    } catch (error) {
+      console.error("Erreur chargement:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      const data = await loadCommandes();
+      setCommandes(data);
+      
+      const oeuvresIds = new Set();
+      data.forEach(cmd => {
+        (cmd.oeuvres || []).forEach(id => oeuvresIds.add(id));
+      });
+      
+      const newOeuvresMap = {};
+      for (const id of oeuvresIds) {
+        try {
+          const oeuvreRes = await oeuvreService.getById(id);
+          newOeuvresMap[id] = oeuvreRes.data;
+        } catch (e) {
+          console.error(`Erreur œuvre ${id}:`, e);
+        }
+      }
+      setOeuvresMap(newOeuvresMap);
+      setLoading(false);
+    };
+    
+    init();
+  }, []);
+
+  const formatDate = (date) => {
+    if (!date) return "—";
+    return new Date(date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  };
+
+  const getOeuvreName = (oeuvreId) => {
+    return oeuvresMap[oeuvreId]?.titre || `Œuvre #${oeuvreId}`;
+  };
+
+  const handleConfirmOrder = async (orderId, otp) => {
+    const response = await commandeService.verifyOtp(orderId, otp);
+    if (response.data?.status === 'success') {
+      const newData = await loadCommandes();
+      setCommandes(newData);
+      showToast(`✅ Commande confirmée !`);
+    }
+    return response;
+  };
+
+  const handleMarkAsDelivered = async (commande) => {
+    try {
+      console.log(`📤 Mise à jour commande ${commande.id} vers Livré`);
+      const response = await commandeService.update(commande.id, { status: 'Livré' });
+      
+      if (response.data) {
+        const newData = await loadCommandes();
+        setCommandes(newData);
+        showToast(`📦 Commande marquée comme livrée !`);
+      }
+    } catch (error) {
+      console.error("❌ Erreur:", error.response?.data || error);
+      showToast("Erreur lors de la mise à jour");
+    }
+  };
+
   const filtered = commandes
-    .filter(c => filtre === "Tous" || c.statut === filtre)
+    .filter(c => filtre === "Tous" || c.status === filtre)
     .filter(c => {
       const q = search.toLowerCase();
       return (
-        c.id.includes(q) ||
-        c.oeuvre.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q)
+        c.id.toLowerCase().includes(q) ||
+        (c.user_email || c.user?.email || "").toLowerCase().includes(q)
       );
     })
     .sort((a, b) => {
@@ -168,53 +241,53 @@ export default function ListeCommandes() {
       if (typeof va === "string") va = va.toLowerCase();
       if (typeof vb === "string") vb = vb.toLowerCase();
       if (va < vb) return sortDir === "asc" ? -1 : 1;
-      if (va > vb) return sortDir === "asc" ?  1 : -1;
+      if (va > vb) return sortDir === "asc" ? 1 : -1;
       return 0;
     });
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // Reset page on filter/search change
-  useEffect(() => setPage(1), [search, filtre]);
+  useEffect(() => {
+    setPage(1);
+  }, [search, filtre]);
 
-  // ── KPIs ──
   const kpis = [
-    { label: "Total commandes",  value: commandes.length,                              color: "#8B2020", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="13" x2="12" y2="17"/><line x1="9" y1="15" x2="15" y2="15"/></svg> },
-    { label: "En attente",       value: commandes.filter(c => c.statut === "En attente").length, color: "#C9A040", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
-    { label: "Prêtes",           value: commandes.filter(c => c.statut === "Prêt").length,       color: "#2C4A8B", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg> },
-    { label: "Livrées",          value: commandes.filter(c => c.statut === "Livré").length,      color: "#3A6B35", icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> },
+    { label: "Total commandes", value: commandes.length, color: "#8B2020", icon: "📋" },
+    { label: "En attente", value: commandes.filter(c => c.status === "En attente").length, color: "#C9A040", icon: "⏳" },
+    { label: "Confirmées", value: commandes.filter(c => c.status === "Confirmée").length, color: "#2C4A8B", icon: "✓" },
+    { label: "Livrées", value: commandes.filter(c => c.status === "Livré").length, color: "#3A6B35", icon: "📦" },
   ];
 
   const SortIcon = ({ col }) => {
-    if (sortCol !== col) return <span className="lc-sort-icon lc-sort-icon--inactive"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M7 10l5-5 5 5M17 14l-5 5-5-5"/></svg></span>;
-    return <span className="lc-sort-icon lc-sort-icon--active">{sortDir === "asc" ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M19 12l-7-7-7 7"/></svg> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 19V5M5 12l7 7 7-7"/></svg>}</span>;
+    if (sortCol !== col) return <span className="lc-sort-icon">↕️</span>;
+    return <span className="lc-sort-icon">{sortDir === "asc" ? "↑" : "↓"}</span>;
   };
+
+  if (loading) {
+    return (
+      <>
+        <Header />
+        <div className="lc-loading">Chargement des commandes...</div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
-
       <main className="lc-page">
-
-        {/* ── Hero ── */}
         <div className="lc-hero">
           <div className="lc-hero__bg" />
           <div className="lc-hero__content">
-            <p className="lc-hero__eyebrow">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline", marginRight: "6px" }}>
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"/>
-              </svg>
-              Espace Artiste
-            </p>
+            <p className="lc-hero__eyebrow">✨ Espace Artiste</p>
             <h1 className="lc-hero__title">Liste des Commandes</h1>
-            <p className="lc-hero__sub">Gérez et suivez toutes les commandes de vos œuvres en temps réel</p>
+            <p className="lc-hero__sub">Gérez et suivez toutes les commandes</p>
           </div>
         </div>
 
         <div className="lc-container">
-
-          {/* ── KPI Cards ── */}
           <section className="lc-kpis">
             {kpis.map((k, i) => (
               <div key={i} className="lc-kpi-card">
@@ -228,29 +301,16 @@ export default function ListeCommandes() {
             ))}
           </section>
 
-          {/* ── Toolbar ── */}
           <div className="lc-toolbar">
-
-            {/* Search */}
             <div className="lc-search-wrap">
-              <svg className="lc-search-icon" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+              <span className="lc-search-icon">🔍</span>
               <input
                 className="lc-search"
-                placeholder="Rechercher par N°, œuvre ou email…"
+                placeholder="Rechercher..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
-              {search && (
-                <button className="lc-search-clear" onClick={() => setSearch("")}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              )}
             </div>
-
-            {/* Statut filters */}
             <div className="lc-filters">
               {STATUTS.map(s => (
                 <button
@@ -260,118 +320,49 @@ export default function ListeCommandes() {
                 >
                   {s}
                   <span className="lc-filter-count">
-                    {s === "Tous" ? commandes.length : commandes.filter(c => c.statut === s).length}
+                    {s === "Tous" ? commandes.length : commandes.filter(c => c.status === s).length}
                   </span>
                 </button>
               ))}
             </div>
-
           </div>
 
-          {/* ── Table ── */}
           <div className="lc-table-wrap">
             {paginated.length === 0 ? (
               <div className="lc-empty">
-                <span className="lc-empty__icon">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  </svg>
-                </span>
+                <span className="lc-empty__icon">📭</span>
                 <p>Aucune commande trouvée</p>
               </div>
             ) : (
               <table className="lc-table">
                 <thead>
                   <tr>
-                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("id")}>
-                      N° Commande <SortIcon col="id" />
-                    </th>
-                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("oeuvre")}>
-                      Œuvre <SortIcon col="oeuvre" />
-                    </th>
-                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("date")}>
-                      Date <SortIcon col="date" />
-                    </th>
-                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("statut")}>
-                      Statut <SortIcon col="statut" />
-                    </th>
-                    <th className="lc-th">Code Vérif.</th>
+                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("id")}>N° Commande <SortIcon col="id" /></th>
+                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("oeuvre")}>Œuvre <SortIcon col="oeuvre" /></th>
+                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("date_command")}>Date <SortIcon col="date_command" /></th>
+                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("status")}>Statut <SortIcon col="status" /></th>
                     <th className="lc-th">E-mail Client</th>
-                    <th className="lc-th lc-th--sortable" onClick={() => handleSort("montant")}>
-                      Montant <SortIcon col="montant" />
-                    </th>
                     <th className="lc-th lc-th--center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.map((c, i) => (
                     <tr key={c.id} className={`lc-tr ${i % 2 === 0 ? "lc-tr--even" : ""}`}>
-
-                      {/* N° */}
-                      <td className="lc-td">
-                        <span className="lc-order-num">#{c.id}</span>
-                      </td>
-
-                      {/* Œuvre */}
-                      <td className="lc-td">
-                        <span className="lc-oeuvre">{c.oeuvre}</span>
-                      </td>
-
-                      {/* Date */}
-                      <td className="lc-td lc-td--muted">
-                        {new Date(c.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}
-                      </td>
-
-                      {/* Statut */}
-                      <td className="lc-td">
-                        <StatutBadge statut={c.statut} />
-                      </td>
-
-                      {/* Code Toggle */}
-                      <td className="lc-td lc-td--center">
-                        <Toggle value={c.codeOn} onChange={() => toggleCode(c.id)} />
-                      </td>
-
-                      {/* Email */}
-                      <td className="lc-td">
-                        <a href={`mailto:${c.email}`} className="lc-email">{c.email}</a>
-                      </td>
-
-                      {/* Montant */}
-                      <td className="lc-td">
-                        <span className="lc-montant">{c.montant} DT</span>
-                      </td>
-
-                      {/* Actions */}
+                      <td className="lc-td"><span className="lc-order-num">#{c.id.slice(0, 8)}</span></td>
+                      <td className="lc-td"><span className="lc-oeuvre">{(c.oeuvres || []).map(id => getOeuvreName(id)).join(", ") || "—"}</span></td>
+                      <td className="lc-td lc-td--muted">{formatDate(c.date_command)}</td>
+                      <td className="lc-td"><StatutBadge statut={c.status} /></td>
+                      <td className="lc-td"><a href={`mailto:${c.user_email || c.user?.email}`} className="lc-email">{c.user_email || c.user?.email || "—"}</a></td>
                       <td className="lc-td lc-td--actions">
-                        <button
-                          className="lc-action-btn lc-action-btn--send"
-                          onClick={() => envoyerCode(c.id)}
-                          disabled={!c.codeOn}
-                          title="Envoyer le code de vérification"
-                        >
-                          <span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
-                            </svg>
-                          </span> Envoyer Code
-                        </button>
-                        <button
-                          className={`lc-action-btn lc-action-btn--confirm ${c.confirmed ? "lc-action-btn--done" : ""}`}
-                          onClick={() => !c.confirmed && confirmer(c.id)}
-                          disabled={c.confirmed}
-                          title={c.confirmed ? "Déjà confirmée" : "Confirmer la livraison"}
-                        >
-                          <span>
-                            {c.confirmed ? 
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg> :
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>
-                            }
-                          </span>
-                          {c.confirmed ? "Confirmé" : "Confirmer"}
-                        </button>
+                        {c.status === "Confirmée" && !c.is_verified && (
+                          <button className="lc-action-btn lc-action-btn--confirm" onClick={() => setSelectedOtpCommand(c)}>🔐 Vérifier OTP</button>
+                        )}
+                        {c.status === "Confirmée" && c.is_verified && (
+                          <button className="lc-action-btn lc-action-btn--deliver" onClick={() => handleMarkAsDelivered(c)}>📦 Marquer livré</button>
+                        )}
+                        {c.status === "Livré" && <span className="lc-completed">✅ Livrée</span>}
+                        {c.status === "En attente" && <span className="lc-pending">⏳ En attente</span>}
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
@@ -379,47 +370,25 @@ export default function ListeCommandes() {
             )}
           </div>
 
-          {/* ── Pagination ── */}
           {totalPages > 1 && (
             <div className="lc-pagination">
-              <button
-                className="lc-page-btn lc-page-btn--nav"
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-
+              <button className="lc-page-btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>←</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  className={`lc-page-btn ${p === page ? "lc-page-btn--active" : ""}`}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </button>
+                <button key={p} className={`lc-page-btn ${p === page ? "lc-page-btn--active" : ""}`} onClick={() => setPage(p)}>{p}</button>
               ))}
-
-              <button
-                className="lc-page-btn lc-page-btn--nav"
-                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-
-              <span className="lc-pagination__info">
-                {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
-              </span>
+              <button className="lc-page-btn" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>→</button>
             </div>
           )}
-
         </div>
       </main>
 
       <Footer />
       <Toast msg={toast.msg} visible={toast.visible} />
       <CustomScrollbar />
+
+      {selectedOtpCommand && (
+        <OtpModal isOpen={!!selectedOtpCommand} onClose={() => setSelectedOtpCommand(null)} onConfirm={handleConfirmOrder} commande={selectedOtpCommand} />
+      )}
     </>
   );
 }

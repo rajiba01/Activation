@@ -1,7 +1,13 @@
+// src/pages/client/UserPage.jsx
 import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import Header from "../../components/UserHeader";
 import Footer from "../../components/Footer";
 import "../../styles/UserPage.css";
+import { gallerySyncService } from "../../services/gallerySync.service";
+import { purchaseService } from "../../services/purchase.service";
+import { authService } from "../../services/auth.service";
+import PaiementModal from "../../components/PaiementModal";
 
 // ─── SVG Icon Components ───────────────────────────────────────────────────────
 
@@ -171,6 +177,11 @@ const Icon = {
       <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
     </svg>
   ),
+  UserIcon: (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
 };
 
 const IC = ({ name, size = 18, style = {}, className = "" }) => {
@@ -181,115 +192,11 @@ const IC = ({ name, size = 18, style = {}, className = "" }) => {
 
 // ─── Static Data ──────────────────────────────────────────────────────────────
 
-const USER = {
-  prenom: "Yasmine",
-  nom: "Azouri",
-  avatar: "https://i.pravatar.cc/80?img=32",
-  galeriesVisitees: 3,
-};
-
 const HOW_TO_STEPS = [
   { iconName: "Search", titre: "Parcourez les galeries", desc: "Explorez notre sélection filtrée selon vos goûts artistiques." },
   { iconName: "Ticket", titre: "Choisissez & payez",     desc: "Sélectionnez une galerie et payez — sécurisé et instantané." },
   { iconName: "Building", titre: "Entrez en 3D",         desc: "Accédez à l'espace immersif pendant toute la durée choisie." },
   { iconName: "Bot", titre: "Dialoguez avec l'IA",       desc: "Le chatbot attaché à chaque tableau répond à vos questions." },
-];
-
-const TRAILER_GALLERY = {
-  id: 0,
-  titre: "Galerie Lumière — Visite Gratuite",
-  artiste: "Vincent Van Gogh",
-  img: "/images/galerie/g1.jpg",
-  desc: "Découvrez l'ambiance d'une vraie galerie ARTIVISION sans débourser un centime. 5 œuvres sélectionnées, chatbot IA actif, immersion 3D complète.",
-  nbOeuvres: 5,
-  duree: "30 min",
-};
-
-const GALLERIES = [
-  {
-    id: 1,
-    titre: "Galerie Impressionniste",
-    artiste: "Vincent Van Gogh",
-    artisteAvatar: "/images/artiste/vangogh.jpg",
-    img: "/images/galerie/g1.jpg",
-    style: "L'Impressionnisme",
-    prix: 5, dureeAcces: "48h",
-    nbOeuvres: 24, nbVisiteurs: 1240, rating: 4.8,
-    badge: "Populaire", badgeColor: "#8B2020",
-    description: "Plongez dans l'univers lumineux de Van Gogh. Chaque toile raconte une histoire de lumière et d'émotion pure.",
-    tags: ["Peinture", "XIXe siècle", "Lumière"],
-    nouveaute: false,
-  },
-  {
-    id: 2,
-    titre: "Art Contemporain",
-    artiste: "Marlene Dumas",
-    artisteAvatar: "/images/artiste/marlene.jpg",
-    img: "/images/galerie/g2.jpg",
-    style: "Art Contemporain",
-    prix: 8, dureeAcces: "72h",
-    nbOeuvres: 40, nbVisiteurs: 890, rating: 4.6,
-    badge: "Nouveau", badgeColor: "#3A6B35",
-    description: "Une exploration audacieuse des œuvres contemporaines. Questionnez votre rapport au monde à travers l'art d'aujourd'hui.",
-    tags: ["Contemporain", "Abstrait", "Émotion"],
-    nouveaute: true,
-  },
-  {
-    id: 3,
-    titre: "Sculpture & Volumes",
-    artiste: "Pablo Picasso",
-    artisteAvatar: "/images/artiste/pablo.jpg",
-    img: "/images/galerie/g3.jpg",
-    style: "Le Cubisme",
-    prix: 6, dureeAcces: "48h",
-    nbOeuvres: 18, nbVisiteurs: 670, rating: 4.7,
-    badge: null, badgeColor: null,
-    description: "Des formes qui transcendent l'espace. Explorez la troisième dimension à travers les sculptures cubistes de Picasso.",
-    tags: ["Sculpture", "Cubisme", "Volume"],
-    nouveaute: false,
-  },
-  {
-    id: 4,
-    titre: "Portraits Classiques",
-    artiste: "Frida Kahlo",
-    artisteAvatar: "/images/artiste/frida.jpg",
-    img: "/images/galerie/g4.jpg",
-    style: "Le Surréalisme",
-    prix: 7, dureeAcces: "7j",
-    nbOeuvres: 32, nbVisiteurs: 2100, rating: 4.9,
-    badge: "Best-seller", badgeColor: "#C9A040",
-    description: "L'âme humaine capturée pour l'éternité par Frida Kahlo. Une plongée intime dans l'identité, la douleur et la beauté.",
-    tags: ["Portrait", "Surréalisme", "Identité"],
-    nouveaute: false,
-  },
-  {
-    id: 5,
-    titre: "Art Abstrait",
-    artiste: "Wassily Kandinsky",
-    artisteAvatar: "https://i.pravatar.cc/60?img=15",
-    img: "/images/galerie/g5.jpg",
-    style: "L'Art Nouveau",
-    prix: 4, dureeAcces: "24h",
-    nbOeuvres: 28, nbVisiteurs: 540, rating: 4.5,
-    badge: null, badgeColor: null,
-    description: "Couleurs et formes libres de toute contrainte. Une symphonie visuelle qui éveille les sens et libère l'imaginaire.",
-    tags: ["Abstrait", "Couleur", "Liberté"],
-    nouveaute: true,
-  },
-  {
-    id: 6,
-    titre: "Photographie d'Art",
-    artiste: "Leila Mansouri",
-    artisteAvatar: "https://i.pravatar.cc/60?img=32",
-    img: "/images/galerie/g6.png",
-    style: "Photographie",
-    prix: 3, dureeAcces: "48h",
-    nbOeuvres: 56, nbVisiteurs: 780, rating: 4.4,
-    badge: "Coup de cœur", badgeColor: "#7B3F8B",
-    description: "L'instant figé comme une œuvre vivante. La photographe Leila Mansouri capture l'invisible dans chaque cliché.",
-    tags: ["Photo", "Instant", "Émotion"],
-    nouveaute: false,
-  },
 ];
 
 const REVIEWS = [
@@ -299,7 +206,7 @@ const REVIEWS = [
     avatar: "https://i.pravatar.cc/60?img=47",
     galerie: "Galerie Impressionniste",
     stars: 5,
-    text: "Une expérience absolument envoûtante. J'ai passé deux heures dans la galerie sans m'en rendre compte. Le chatbot m'a expliqué chaque tableau avec une précision époustouflante.",
+    text: "Une expérience absolument envoûtante. J'ai passé deux heures dans la galerie sans m'en rendre compte.",
     date: "12 mars 2026",
     helpful: 24,
   },
@@ -309,7 +216,7 @@ const REVIEWS = [
     avatar: "https://i.pravatar.cc/60?img=68",
     galerie: "Portraits Classiques",
     stars: 5,
-    text: "Je ne connaissais rien à Frida Kahlo avant cette visite. Maintenant je comprends pourquoi elle est une icône. L'immersion 3D est bluffante — on se sent vraiment dans la galerie.",
+    text: "Je ne connaissais rien à Frida Kahlo avant cette visite. Maintenant je comprends pourquoi elle est une icône.",
     date: "8 mars 2026",
     helpful: 18,
   },
@@ -319,39 +226,9 @@ const REVIEWS = [
     avatar: "https://i.pravatar.cc/60?img=32",
     galerie: "Art Contemporain",
     stars: 4,
-    text: "La galerie d'art contemporain m'a bousculée dans le bon sens. Certaines œuvres m'ont laissée perplexe, mais c'est exactement ça l'art contemporain ! L'IA aide vraiment à comprendre.",
+    text: "La galerie d'art contemporain m'a bousculée dans le bon sens. L'IA aide vraiment à comprendre.",
     date: "5 mars 2026",
     helpful: 11,
-  },
-  {
-    id: 4,
-    name: "Lucas Devereux",
-    avatar: "https://i.pravatar.cc/60?img=12",
-    galerie: "Galerie Impressionniste",
-    stars: 5,
-    text: "Le trailer gratuit m'a convaincu d'acheter l'accès complet. Excellent moyen de découvrir sans risque. La qualité des œuvres numérisées est remarquable.",
-    date: "1 mars 2026",
-    helpful: 32,
-  },
-  {
-    id: 5,
-    name: "Nina Volkov",
-    avatar: "https://i.pravatar.cc/60?img=25",
-    galerie: "Sculpture & Volumes",
-    stars: 4,
-    text: "Pouvoir tourner autour des sculptures en 3D est une révolution. On voit des détails impossibles à percevoir dans un vrai musée bondé. Je recommande vivement.",
-    date: "27 fév 2026",
-    helpful: 9,
-  },
-  {
-    id: 6,
-    name: "Omar Tazi",
-    avatar: "https://i.pravatar.cc/60?img=56",
-    galerie: "Photographie d'Art",
-    stars: 5,
-    text: "La galerie photo de Leila Mansouri est tout simplement poétique. À 3 DT l'entrée, c'est le meilleur rapport qualité-prix de toute la plateforme. Une vraie pépite.",
-    date: "22 fév 2026",
-    helpful: 41,
   },
 ];
 
@@ -359,7 +236,7 @@ const STYLES = ["Tous", "L'Impressionnisme", "Le Surréalisme", "Art Contemporai
 
 const AVG_RATING = (REVIEWS.reduce((s, r) => s + r.stars, 0) / REVIEWS.length).toFixed(1);
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Stars Component ──────────────────────────────────────────────────────────
 
 function Stars({ count, size = 14 }) {
   return (
@@ -375,10 +252,15 @@ function Stars({ count, size = 14 }) {
 
 // ─── Gallery Card ──────────────────────────────────────────────────────────────
 
-function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
+function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite, hasAccess }) {
   return (
     <div className="up-card">
-      {galerie.badge && (
+      {hasAccess && (
+        <div className="up-card__badge" style={{ background: "#3A6B35" }}>
+          ✅ Accès actif
+        </div>
+      )}
+      {galerie.badge && !hasAccess && (
         <div className="up-card__badge" style={{ background: galerie.badgeColor }}>
           {galerie.badge}
         </div>
@@ -388,9 +270,7 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
         onClick={e => { e.stopPropagation(); onToggleFavorite(galerie.id); }}
         aria-label="Ajouter aux favoris"
       >
-        {isFavorite
-          ? <IC name="Heart" size={16} />
-          : <IC name="HeartOutline" size={16} />}
+        {isFavorite ? <IC name="Heart" size={16} /> : <IC name="HeartOutline" size={16} />}
       </button>
 
       <div className="up-card__img-wrap">
@@ -431,11 +311,17 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
 
       <div className="up-card__footer">
         <div className="up-card__price-wrap">
-          <span className="up-card__price">{galerie.prix} DT</span>
-          <span className="up-card__duree">Accès {galerie.dureeAcces}</span>
+          {hasAccess ? (
+            <span className="up-card__price" style={{ color: "#3A6B35" }}>Accès déjà acheté</span>
+          ) : (
+            <>
+              <span className="up-card__price">{galerie.prix} DT</span>
+              <span className="up-card__duree">Accès {galerie.dureeAcces}</span>
+            </>
+          )}
         </div>
         <button className="up-card__cta" onClick={() => onEnter(galerie)}>
-          Entrer <IC name="Arrow" size={14} style={{ marginLeft: 4 }} />
+          {hasAccess ? "🎨 Entrer" : "Entrer"} <IC name="Arrow" size={14} style={{ marginLeft: 4 }} />
         </button>
       </div>
     </div>
@@ -445,12 +331,7 @@ function GalleryCard({ galerie, onEnter, isFavorite, onToggleFavorite }) {
 // ─── Free Trailer Section ──────────────────────────────────────────────────────
 
 function TrailerSection({ onWatch }) {
-  const MOSAIC_IMGS = [
-    "/images/galerie/g1.jpg",
-    "/images/galerie/g2.jpg",
-    "/images/galerie/g4.jpg",
-  ];
-
+  const MOSAIC_IMGS = ["/images/galerie/g1.jpg", "/images/galerie/g2.jpg", "/images/galerie/g4.jpg"];
   const features = [
     { iconName: "Building", text: "Galerie 3D complète — navigation libre" },
     { iconName: "Bot",      text: "Chatbot IA sur chaque œuvre" },
@@ -461,23 +342,12 @@ function TrailerSection({ onWatch }) {
   return (
     <div className="up-trailer" style={{ margin: "44px 52px 0" }}>
       <div className="up-trailer__inner">
-
-        {/* Left */}
         <div className="up-trailer__left">
           <div>
-            <div className="up-trailer__eyebrow">
-              <span className="up-trailer__eyebrow-dot" />
-              Visite Gratuite
-            </div>
-            <h2 className="up-trailer__title">
-              Explorez <span>sans payer</span><br />avec notre Free Trailer
-            </h2>
-            <p className="up-trailer__desc">
-              Découvrez l'immersion 3D d'ARTIVISION gratuitement. 5 œuvres sélectionnées, chatbot IA actif,
-              30 minutes pour tomber amoureux de l'art virtuel — sans engagement.
-            </p>
+            <div className="up-trailer__eyebrow"><span className="up-trailer__eyebrow-dot" />Visite Gratuite</div>
+            <h2 className="up-trailer__title">Explorez <span>sans payer</span><br />avec notre Free Trailer</h2>
+            <p className="up-trailer__desc">Découvrez l'immersion 3D d'ARTIVISION gratuitement. 5 œuvres sélectionnées, chatbot IA actif, 30 minutes pour tomber amoureux de l'art virtuel — sans engagement.</p>
           </div>
-
           <div className="up-trailer__features">
             {features.map((f, i) => (
               <div key={i} className="up-trailer__feature">
@@ -486,49 +356,32 @@ function TrailerSection({ onWatch }) {
               </div>
             ))}
           </div>
-
           <div>
             <button className="up-trailer__play-btn" onClick={onWatch}>
               <div className="up-trailer__play-icon"><IC name="Play" size={16} /></div>
               Lancer la visite gratuite
             </button>
-            <div className="up-trailer__free-tag">
-              <IC name="Check" size={13} style={{ marginRight: 5 }} />
-              Aucune carte bancaire · Accès immédiat
-            </div>
+            <div className="up-trailer__free-tag"><IC name="Check" size={13} style={{ marginRight: 5 }} />Aucune carte bancaire · Accès immédiat</div>
           </div>
         </div>
-
-        {/* Right — mosaic */}
         <div className="up-trailer__right">
           <div className="up-trailer__mosaic">
-            <div>
-              <img src={MOSAIC_IMGS[0]} alt="galerie" className="up-trailer__mosaic-img"
-                onError={e => { e.target.src = "https://picsum.photos/400/420?random=10"; }} />
-            </div>
-            <div>
-              <img src={MOSAIC_IMGS[1]} alt="galerie" className="up-trailer__mosaic-img"
-                onError={e => { e.target.src = "https://picsum.photos/400/210?random=11"; }} />
-            </div>
+            <div><img src={MOSAIC_IMGS[0]} alt="galerie" className="up-trailer__mosaic-img" /></div>
+            <div><img src={MOSAIC_IMGS[1]} alt="galerie" className="up-trailer__mosaic-img" /></div>
             <div style={{ position: "relative" }}>
-              <img src={MOSAIC_IMGS[2]} alt="galerie" className="up-trailer__mosaic-img"
-                onError={e => { e.target.src = "https://picsum.photos/400/210?random=12"; }} />
-              <div className="up-trailer__overlay-badge">
-                <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
-                Free Trailer
-              </div>
+              <img src={MOSAIC_IMGS[2]} alt="galerie" className="up-trailer__mosaic-img" />
+              <div className="up-trailer__overlay-badge"><IC name="Sparkle" size={12} style={{ marginRight: 5 }} />Free Trailer</div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );
 }
 
-// ─── Trailer Modal ─────────────────────────────────────────────────────────────
+// ─── Trailer Modal avec temps limité ───────────────────────────────────────────
 
-function TrailerModal({ onClose }) {
+function TrailerModal({ onClose, onStartFreeTrailer }) {
   const [countdown, setCountdown] = useState(30 * 60);
   const [started, setStarted] = useState(false);
 
@@ -544,34 +397,27 @@ function TrailerModal({ onClose }) {
     return `${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   };
 
+  const handleStart = () => {
+    setStarted(true);
+    onStartFreeTrailer();
+  };
+
   return (
     <div className="up-trailer-modal" onClick={onClose}>
       <div className="up-trailer-modal__box" onClick={e => e.stopPropagation()}>
-
         <div className="up-trailer-modal__top">
-          <img src="/images/galerie/g1.jpg" alt="trailer" className="up-trailer-modal__preview-img"
-            onError={e => { e.target.src = "https://picsum.photos/700/340?random=20"; }} />
-          <button className="up-trailer-modal__close-btn" onClick={onClose}>
-            <IC name="Close" size={16} />
-          </button>
-
+          <img src="/images/galerie/g1.jpg" alt="trailer" className="up-trailer-modal__preview-img" />
+          <button className="up-trailer-modal__close-btn" onClick={onClose}><IC name="Close" size={16} /></button>
           <div className="up-trailer-modal__center">
             {!started ? (
               <>
-                <div className="up-trailer-modal__big-play" onClick={() => setStarted(true)}>
-                  <IC name="Play" size={32} />
-                </div>
+                <div className="up-trailer-modal__big-play" onClick={handleStart}><IC name="Play" size={32} /></div>
                 <p className="up-trailer-modal__play-label">Démarrer la visite gratuite</p>
-                <div className="up-trailer-modal__timer">
-                  <IC name="Clock" size={14} style={{ marginRight: 5 }} />
-                  30 min d'accès offert
-                </div>
+                <div className="up-trailer-modal__timer"><IC name="Clock" size={14} style={{ marginRight: 5 }} />30 min d'accès offert</div>
               </>
             ) : (
               <>
-                <div className="up-trailer-modal__big-play">
-                  <IC name="Building" size={32} />
-                </div>
+                <div className="up-trailer-modal__big-play"><IC name="Building" size={32} /></div>
                 <p className="up-trailer-modal__play-label">Visite en cours…</p>
                 <div className="up-trailer-modal__timer">
                   <IC name="Clock" size={14} style={{ marginRight: 5 }} />
@@ -581,30 +427,26 @@ function TrailerModal({ onClose }) {
             )}
           </div>
         </div>
-
         <div className="up-trailer-modal__body">
-          <h3 className="up-trailer-modal__name">Galerie Lumière — Free Trailer</h3>
+          <h3 className="up-trailer-modal__name">Galerie Gratuite — Free Trailer</h3>
           <p className="up-trailer-modal__info">
-            {started
+            {started 
               ? "Votre visite est en cours. Naviguez librement dans la galerie 3D et interrogez le chatbot sur chaque œuvre."
-              : "5 œuvres de Van Gogh, chatbot IA, navigation 3D. Aucun paiement requis — 30 minutes offertes pour découvrir ARTIVISION."}
+              : "Découvrez notre galerie gratuite ! 5 œuvres, chatbot IA, navigation 3D. 30 minutes offertes."}
           </p>
           <div className="up-trailer-modal__actions">
             {!started ? (
               <>
-                <button className="up-trailer-modal__cta" onClick={() => setStarted(true)}>
-                  <IC name="Play" size={14} style={{ marginRight: 6 }} />
-                  Commencer maintenant
+                <button className="up-trailer-modal__cta" onClick={handleStart}>
+                  <IC name="Play" size={14} style={{ marginRight: 6 }} />Commencer maintenant
                 </button>
                 <button className="up-trailer-modal__skip" onClick={onClose}>Fermer</button>
               </>
             ) : (
               <>
-                <a href="/galerie/trailer" className="up-trailer-modal__cta"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
-                  <IC name="Building" size={14} style={{ marginRight: 6 }} />
-                  Entrer dans la galerie
-                </a>
+                <Link to="/test-galerie" className="up-trailer-modal__cta" style={{ display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>
+                  <IC name="Building" size={14} style={{ marginRight: 6 }} />Entrer dans la galerie
+                </Link>
                 <button className="up-trailer-modal__skip" onClick={onClose}>Fermer</button>
               </>
             )}
@@ -615,31 +457,91 @@ function TrailerModal({ onClose }) {
   );
 }
 
-// ─── Reviews Section ───────────────────────────────────────────────────────────
+// ─── Ajout d'avis Modal ────────────────────────────────────────────────────────
 
-function ReviewsSection() {
+function AddReviewModal({ isOpen, onClose, onSubmit, hasAccess }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const handleSubmit = () => {
+    if (!hasAccess) {
+      alert("Vous devez avoir acheté l'accès à au moins une galerie pour laisser un avis.");
+      return;
+    }
+    if (!comment.trim()) {
+      alert("Veuillez écrire un commentaire.");
+      return;
+    }
+    onSubmit({ rating, comment, date: new Date().toISOString() });
+    setRating(5);
+    setComment("");
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="ma-modal-overlay" onClick={onClose}>
+      <div className="ma-modal" onClick={e => e.stopPropagation()}>
+        <h3>📝 Laisser un avis</h3>
+        <p>Partagez votre expérience sur ARTIVISION</p>
+        
+        <div className="review-rating">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <span
+              key={star}
+              className={`review-star ${(hoverRating || rating) >= star ? 'active' : ''}`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHoverRating(star)}
+              onMouseLeave={() => setHoverRating(0)}
+            >
+              ★
+            </span>
+          ))}
+        </div>
+        
+        <textarea
+          className="review-textarea"
+          placeholder="Votre avis sur la plateforme..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          rows={4}
+        />
+        
+        <div className="ma-modal-actions">
+          <button onClick={onClose}>Annuler</button>
+          <button onClick={handleSubmit}>Publier mon avis</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Reviews Section avec ajout d'avis ─────────────────────────────────────────
+
+function ReviewsSection({ userHasAccess, onAddReview, reviews, onToggleHelpful }) {
+  const [showAll, setShowAll] = useState(false);
+  const [showAddReview, setShowAddReview] = useState(false);
   const [helpfulClicked, setHelpfulClicked] = useState({});
   const [helpfulCounts, setHelpfulCounts] = useState(
-    Object.fromEntries(REVIEWS.map(r => [r.id, r.helpful]))
+    Object.fromEntries(reviews.map(r => [r.id, r.helpful || 0]))
   );
-  const [showAll, setShowAll] = useState(false);
 
   const toggleHelpful = (id) => {
     const wasClicked = helpfulClicked[id];
     setHelpfulClicked(prev => ({ ...prev, [id]: !wasClicked }));
     setHelpfulCounts(prev => ({ ...prev, [id]: wasClicked ? prev[id] - 1 : prev[id] + 1 }));
+    if (onToggleHelpful) onToggleHelpful(id);
   };
 
-  const displayed = showAll ? REVIEWS : REVIEWS.slice(0, 3);
+  const displayed = showAll ? reviews : reviews.slice(0, 3);
 
   return (
     <section className="up-reviews">
       <div className="up-reviews__head">
         <div className="up-reviews__title-wrap">
-          <span className="up-reviews__eyebrow">
-            <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
-            Témoignages
-          </span>
+          <span className="up-reviews__eyebrow"><IC name="Sparkle" size={12} style={{ marginRight: 5 }} />Témoignages</span>
           <h2 className="up-reviews__title">Ce que disent nos visiteurs</h2>
         </div>
         <div className="up-reviews__avg">
@@ -647,50 +549,53 @@ function ReviewsSection() {
           <div className="up-reviews__avg-stars">
             <div className="up-reviews__stars-row">
               {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className={`up-reviews__star ${i < Math.round(AVG_RATING) ? "up-reviews__star--on" : ""}`}>
-                  <IC name="Star" size={16} />
-                </span>
+                <span key={i} className={`up-reviews__star ${i < Math.round(AVG_RATING) ? "up-reviews__star--on" : ""}`}><IC name="Star" size={16} /></span>
               ))}
             </div>
-            <span className="up-reviews__avg-count">{REVIEWS.length} avis vérifiés</span>
+            <span className="up-reviews__avg-count">{reviews.length} avis vérifiés</span>
           </div>
         </div>
       </div>
-
+      
       <div className="up-reviews__grid">
         {displayed.map((r, idx) => (
           <div key={r.id} className="up-review-card" style={{ animationDelay: `${idx * 0.07}s` }}>
             <div className="up-review-card__top">
-              <img src={r.avatar} alt={r.name} className="up-review-card__avatar"
-                onError={e => { e.target.src = `https://i.pravatar.cc/60?img=${r.id + 10}`; }} />
+              <div className="up-review-card__avatar-initial">{r.name.charAt(0)}</div>
               <div className="up-review-card__meta">
                 <p className="up-review-card__name">{r.name}</p>
-                <p className="up-review-card__galerie">— {r.galerie}</p>
+                <p className="up-review-card__galerie">— {r.galerie || "ARTIVISION"}</p>
               </div>
               <Stars count={r.stars} />
             </div>
             <p className="up-review-card__text">"{r.text}"</p>
             <div className="up-review-card__footer">
               <span className="up-review-card__date">{r.date}</span>
-              <button
-                className={`up-review-card__helpful ${helpfulClicked[r.id] ? "up-review-card__helpful--active" : ""}`}
-                onClick={() => toggleHelpful(r.id)}
-              >
-                <IC name="ThumbsUp" size={13} style={{ marginRight: 5 }} />
-                Utile ({helpfulCounts[r.id]})
+              <button className={`up-review-card__helpful ${helpfulClicked[r.id] ? "up-review-card__helpful--active" : ""}`} onClick={() => toggleHelpful(r.id)}>
+                <IC name="ThumbsUp" size={13} style={{ marginRight: 5 }} />Utile ({helpfulCounts[r.id]})
               </button>
             </div>
           </div>
         ))}
       </div>
-
-      {!showAll && REVIEWS.length > 3 && (
-        <div className="up-reviews__more">
+      
+      <div className="up-reviews__footer">
+        {!showAll && reviews.length > 3 && (
           <button className="up-reviews__more-btn" onClick={() => setShowAll(true)}>
-            Voir tous les avis ({REVIEWS.length})
+            Voir tous les avis ({reviews.length})
           </button>
-        </div>
-      )}
+        )}
+        <button className="up-reviews__add-btn" onClick={() => setShowAddReview(true)}>
+          ✍️ Donner mon avis
+        </button>
+      </div>
+
+      <AddReviewModal
+        isOpen={showAddReview}
+        onClose={() => setShowAddReview(false)}
+        onSubmit={onAddReview}
+        hasAccess={userHasAccess}
+      />
     </section>
   );
 }
@@ -698,101 +603,77 @@ function ReviewsSection() {
 // ─── Entry Modal ───────────────────────────────────────────────────────────────
 
 const HOW_TO_MODAL = [
-  { iconName: "CreditCard", titre: "Paiement immédiat",         desc: "Transaction sécurisée. Votre accès est activé instantanément." },
-  { iconName: "Building",   titre: "Galerie 3D",                desc: "Naviguez librement dans l'espace virtuel pendant toute la durée." },
-  { iconName: "Bot",        titre: "Chatbot IA",                desc: "Chaque œuvre dispose d'un assistant qui répond à vos questions." },
+  { iconName: "CreditCard", titre: "Paiement immédiat", desc: "Transaction sécurisée. Votre accès est activé instantanément." },
+  { iconName: "Building",   titre: "Galerie 3D",        desc: "Naviguez librement dans l'espace virtuel pendant toute la durée." },
+  { iconName: "Bot",        titre: "Chatbot IA",        desc: "Chaque œuvre dispose d'un assistant qui répond à vos questions." },
   { iconName: "Home",       titre: "Essai dans votre intérieur", desc: "Visualisez l'œuvre chez vous avant de l'acheter." },
 ];
 
-function EntryModal({ galerie, onClose }) {
-  const navigate = useNavigate();
-  const [paying, setPaying] = useState(false);
-  const [paid, setPaid] = useState(false);
-
-  const handlePay = async () => {
-    setPaying(true);
-    await new Promise(r => setTimeout(r, 1800));
-    setPaying(false);
-    setPaid(true);
+function EntryModal({ galerie, onClose, hasExistingAccess, onOpenPaiement }) {
+  const handleOpenPaiement = () => {
+    onClose();
+    onOpenPaiement({
+      type: 'gallery_access',
+      itemId: galerie.id,
+      montant: galerie.prix,
+      description: `Accès à la galerie "${galerie.titre}"`,
+      role: 'visiteur',
+      galerie: galerie
+    });
   };
+
+  if (hasExistingAccess) {
+    return (
+      <div className="up-modal-backdrop" onClick={onClose}>
+        <div className="up-modal" onClick={e => e.stopPropagation()}>
+          <button className="up-modal__close" onClick={onClose}><IC name="Close" size={16} /></button>
+          <div className="up-modal__success">
+            <span className="up-modal__success-icon"><IC name="Sparkle" size={36} /></span>
+            <h2 className="up-modal__success-title">Accès déjà disponible !</h2>
+            <p className="up-modal__success-sub">Vous avez déjà accès à <strong>"{galerie.titre}"</strong>.</p>
+            <div className="up-modal__success-badge"><IC name="Ticket" size={14} style={{ marginRight: 6 }} />Accès actif</div>
+            <button className="up-modal__enter-btn" onClick={() => window.location.href = `/galerie-3d/${galerie.id}?role=visiteur`}>
+              🏛 Entrer dans la galerie maintenant
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="up-modal-backdrop" onClick={onClose}>
       <div className="up-modal" onClick={e => e.stopPropagation()}>
-        <button className="up-modal__close" onClick={onClose}>
-          <IC name="Close" size={16} />
+        <button className="up-modal__close" onClick={onClose}><IC name="Close" size={16} /></button>
+
+        <div className="up-modal__header">
+          <span className="up-modal__icon"><IC name="Building" size={28} /></span>
+          <h2 className="up-modal__title">{galerie.titre}</h2>
+          <p className="up-modal__artiste">par {galerie.artiste}</p>
+        </div>
+
+        <div className="up-modal__steps-grid" style={{ marginBottom: 20 }}>
+          <p className="up-modal__steps-title">Comment ça marche ?</p>
+          {HOW_TO_MODAL.map((s, i) => (
+            <div key={i} className="up-modal__step">
+              <div className="up-modal__step-icon"><IC name={s.iconName} size={18} /></div>
+              <div><p className="up-modal__step-titre">{s.titre}</p><p className="up-modal__step-desc">{s.desc}</p></div>
+            </div>
+          ))}
+        </div>
+
+        <div className="up-modal__recap">
+          <div className="up-modal__recap-row"><span>Galerie</span><strong>{galerie.titre}</strong></div>
+          <div className="up-modal__recap-row"><span>Durée d'accès</span><strong>{galerie.dureeAcces} après paiement</strong></div>
+          <div className="up-modal__recap-row"><span>Nombre d'œuvres</span><strong>{galerie.nbOeuvres} œuvres</strong></div>
+          <div className="up-modal__recap-row"><span>Prix d'entrée</span><strong className="up-modal__total">{galerie.prix} DT</strong></div>
+        </div>
+
+        <button className="up-modal__pay-btn" onClick={handleOpenPaiement}>
+          <IC name="CreditCard" size={16} style={{ marginRight: 7 }} />
+          Payer avec carte bancaire — {galerie.prix} DT
         </button>
-
-        {!paid ? (
-          <>
-            <div className="up-modal__header">
-              <span className="up-modal__icon"><IC name="Building" size={28} /></span>
-              <h2 className="up-modal__title">{galerie.titre}</h2>
-              <p className="up-modal__artiste">par {galerie.artiste}</p>
-            </div>
-
-            <div className="up-modal__steps-grid" style={{ marginBottom: 20 }}>
-              <p className="up-modal__steps-title">Comment ça marche ?</p>
-              {HOW_TO_MODAL.map((s, i) => (
-                <div key={i} className="up-modal__step">
-                  <div className="up-modal__step-icon"><IC name={s.iconName} size={18} /></div>
-                  <div>
-                    <p className="up-modal__step-titre">{s.titre}</p>
-                    <p className="up-modal__step-desc">{s.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="up-modal__recap">
-              <div className="up-modal__recap-row"><span>Galerie</span><strong>{galerie.titre}</strong></div>
-              <div className="up-modal__recap-row"><span>Durée d'accès</span><strong>{galerie.dureeAcces} après paiement</strong></div>
-              <div className="up-modal__recap-row"><span>Nombre d'œuvres</span><strong>{galerie.nbOeuvres} œuvres</strong></div>
-              <div className="up-modal__recap-row">
-                <span>Prix d'entrée</span>
-                <strong className="up-modal__total">{galerie.prix} DT</strong>
-              </div>
-            </div>
-
-            <button
-              className={`up-modal__pay-btn ${paying ? "up-modal__pay-btn--loading" : ""}`}
-              onClick={handlePay}
-              disabled={paying}
-            >
-              {paying
-                ? <span className="up-modal__spinner" />
-                : (
-                  <>
-                    <IC name="Ticket" size={16} style={{ marginRight: 7 }} />
-                    Payer & Entrer — {galerie.prix} DT
-                  </>
-                )
-              }
-            </button>
-            <p className="up-modal__secure">
-              <IC name="Lock" size={13} style={{ marginRight: 5 }} />
-              Paiement sécurisé · Accès immédiat
-            </p>
-          </>
-        ) : (
-          <div className="up-modal__success">
-            <span className="up-modal__success-icon"><IC name="Sparkle" size={36} /></span>
-            <h2 className="up-modal__success-title">Accès confirmé !</h2>
-            <p className="up-modal__success-sub">
-              Vous avez accès à <strong>"{galerie.titre}"</strong> pendant <strong>{galerie.dureeAcces}</strong>.
-            </p>
-            <div className="up-modal__success-badge">
-              <IC name="Ticket" size={14} style={{ marginRight: 6 }} />
-              Votre ticket d'entrée est prêt
-            </div>
-            <button
-                className="up-modal__enter-btn"
-                onClick={() => navigate(`/galerie-3d/${galerie.id}`, { state: { mode: "visiteur" } })}>
-                🏛 Entrer dans la galerie maintenant
-            </button>
-           
-          </div>
-        )}
+        <p className="up-modal__secure"><IC name="Lock" size={13} style={{ marginRight: 5 }} />Paiement sécurisé · Accès immédiat</p>
       </div>
     </div>
   );
@@ -813,9 +694,7 @@ function CustomScrollbar() {
       const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
       const ratio = clientHeight / scrollHeight;
       const thumbH = Math.max(ratio * 100, 8);
-      const thumbTop = scrollHeight > clientHeight
-        ? (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbH)
-        : 0;
+      const thumbTop = scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * (100 - thumbH) : 0;
       thumb.style.height = `${thumbH}vh`;
       thumb.style.top = `${thumbTop}vh`;
     };
@@ -843,16 +722,13 @@ function CustomScrollbar() {
     window.addEventListener("mouseup", onUp);
   };
 
-  return (
-    <div className="up-csb-track">
-      <div className="up-csb-thumb" ref={thumbRef} onMouseDown={onMouseDown} />
-    </div>
-  );
+  return (<div className="up-csb-track"><div className="up-csb-thumb" ref={thumbRef} onMouseDown={onMouseDown} /></div>);
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function UserPage() {
+  const navigate = useNavigate();
   const [styleFilter, setStyleFilter] = useState("Tous");
   const [sortBy, setSortBy] = useState("populaire");
   const [favorites, setFavorites] = useState([]);
@@ -860,18 +736,102 @@ export default function UserPage() {
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [search, setSearch] = useState("");
+  
+  // États utilisateur
+  const [userInfo, setUserInfo] = useState(null);
+  
+  // États paiement
+  const [showPaiementModal, setShowPaiementModal] = useState(false);
+  const [paymentItem, setPaymentItem] = useState(null);
+  
+  // États galeries
+  const [galleries, setGalleries] = useState([]);
+  const [loadingGalleries, setLoadingGalleries] = useState(true);
+  const [userAccesses, setUserAccesses] = useState({});
+  
+  // États avis
+  const [userReviews, setUserReviews] = useState(REVIEWS);
+  const [userHasAccess, setUserHasAccess] = useState(false);
+
+  // ✅ Fonction pour le Trailer - redirige vers /test-galerie
+  const handleWatchTrailer = () => {
+    navigate("/test-galerie");
+  };
+
+  // Charger les infos de l'utilisateur connecté
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const response = await authService.getCurrentUser();
+        const userData = response.data?.data || response.data;
+        setUserInfo(userData);
+      } catch (error) {
+        console.error("Erreur chargement utilisateur:", error);
+      }
+    };
+    loadUserInfo();
+  }, []);
+
+  // Charger les galeries et les accès
+  useEffect(() => {
+    const loadData = async () => {
+      setLoadingGalleries(true);
+      try {
+        const data = await gallerySyncService.getPublishedGalleriesForVisitors();
+        
+        const formatted = data.map(g => ({
+          id: g.id,
+          titre: g.nom,
+          artiste: g.artiste_nom || "Artiste",
+          artisteAvatar: g.artiste_avatar || "/images/artiste/default.jpg",
+          img: g.cover_image || "/images/galerie/default.jpg",
+          style: g.style || "Art Contemporain",
+          prix: g.prix_visiteur || 5,
+          dureeAcces: g.duree_acces || "48h",
+          nbOeuvres: g.nb_oeuvres_max || 0,
+          nbVisiteurs: g.visiteurs_count || 0,
+          rating: g.rating || 4.5,
+          badge: g.badge || null,
+          badgeColor: g.badge_color || null,
+          description: g.description || "",
+          tags: g.tags || ["Art", "Exposition"],
+          nouveaute: false,
+        }));
+        
+        setGalleries(formatted);
+        
+        // Vérifier les accès pour chaque galerie
+        let hasAnyAccess = false;
+        const accesses = {};
+        for (const g of formatted) {
+          try {
+            const access = await purchaseService.checkAccess(g.id, 'visiteur');
+            accesses[g.id] = access.has_access;
+            if (access.has_access) hasAnyAccess = true;
+          } catch (err) {
+            accesses[g.id] = false;
+          }
+        }
+        setUserAccesses(accesses);
+        setUserHasAccess(hasAnyAccess);
+        
+      } catch (error) {
+        console.error("Erreur chargement galeries:", error);
+      } finally {
+        setLoadingGalleries(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const toggleFavorite = (id) => {
     setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
   };
 
-  const filtered = GALLERIES
+  const filtered = galleries
     .filter(g => styleFilter === "Tous" || g.style === styleFilter)
-    .filter(g =>
-      !search ||
-      g.titre.toLowerCase().includes(search.toLowerCase()) ||
-      g.artiste.toLowerCase().includes(search.toLowerCase())
-    )
+    .filter(g => !search || g.titre.toLowerCase().includes(search.toLowerCase()) || g.artiste.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (sortBy === "populaire")  return b.nbVisiteurs - a.nbVisiteurs;
       if (sortBy === "prix-asc")   return a.prix - b.prix;
@@ -881,81 +841,114 @@ export default function UserPage() {
       return 0;
     });
 
+  const handleOpenPaiement = (item) => {
+    setPaymentItem(item);
+    setShowPaiementModal(true);
+  };
+
+  const handlePaiementSuccess = async () => {
+    setShowPaiementModal(false);
+    
+    if (paymentItem?.type === 'gallery_access' && paymentItem.galerie) {
+      try {
+        const result = await purchaseService.purchaseGalleryAccess(paymentItem.galerie.id);
+        console.log("✅ Accès acheté:", result.data);
+        
+        setUserAccesses(prev => ({ ...prev, [paymentItem.galerie.id]: true }));
+        setUserHasAccess(true);
+        
+        navigate(`/galerie-3d/${paymentItem.galerie.id}`, { 
+          state: { role: "visiteur", hasPurchasedAccess: true }
+        });
+      } catch (error) {
+        console.error("❌ Erreur achat accès:", error);
+        alert("Erreur lors de l'achat de l'accès: " + (error.response?.data?.error || error.message));
+      }
+    }
+  };
+
+  const handleAddReview = (review) => {
+    const newReview = {
+      id: userReviews.length + 1,
+      name: userInfo?.prenom || userInfo?.Prenom || userInfo?.username || "Visiteur",
+      avatar: "",
+      galerie: "ARTIVISION",
+      stars: review.rating,
+      text: review.comment,
+      date: new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }),
+      helpful: 0,
+    };
+    setUserReviews(prev => [newReview, ...prev]);
+    alert("✅ Merci pour votre avis !");
+  };
+
+  const getUserFirstName = () => {
+    if (userInfo) {
+      return userInfo.prenom || userInfo.Prenom || userInfo.username || "Visiteur";
+    }
+    return "Visiteur";
+  };
+
+  if (loadingGalleries) {
+    return (
+      <>
+        <Header />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', flexDirection: 'column', gap: '20px' }}>
+          <div className="g3d-loader-spinner" style={{ width: 50, height: 50 }} />
+          <p style={{ color: '#8B6030' }}>Chargement des galeries...</p>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  const purchasedCount = Object.values(userAccesses).filter(v => v === true).length;
+
   return (
     <>
       <Header />
 
-      {/* ── Onboarding Banner ── */}
       {showOnboarding && (
         <div className="up-onboard">
           <span className="up-onboard__icon"><IC name="Gift" size={22} /></span>
           <div className="up-onboard__text">
-            <p className="up-onboard__title">Bienvenue, {USER.prenom} ! Votre compte est activé.</p>
-            <p className="up-onboard__sub">
-              Explorez les galeries virtuelles 3D, payez l'entrée et laissez l'IA vous guider dans chaque œuvre.
-              Commencez par le <strong>Free Trailer</strong> — c'est gratuit !
-            </p>
+            <p className="up-onboard__title">Bienvenue, {getUserFirstName()} ! Votre compte est activé.</p>
+            <p className="up-onboard__sub">Explorez les galeries virtuelles 3D, payez l'entrée et laissez l'IA vous guider dans chaque œuvre.</p>
           </div>
           <div className="up-onboard__steps">
             {["Choisir une galerie", "Payer l'entrée", "Explorer en 3D"].map((s, i) => (
-              <div key={i} className="up-onboard__step">
-                <span className="up-onboard__step-num">{i + 1}</span>
-                {s}
-              </div>
+              <div key={i} className="up-onboard__step"><span className="up-onboard__step-num">{i + 1}</span>{s}</div>
             ))}
           </div>
-          <button className="up-onboard__close" onClick={() => setShowOnboarding(false)}>
-            <IC name="Close" size={14} />
-          </button>
+          <button className="up-onboard__close" onClick={() => setShowOnboarding(false)}><IC name="Close" size={14} /></button>
         </div>
       )}
 
-      {/* ── Welcome ── */}
       <div className="up-welcome">
         <div>
-          <span className="up-welcome__greeting">
-            <IC name="Sparkle" size={12} style={{ marginRight: 5 }} />
-            Espace Visiteur
-          </span>
-          <h1 className="up-welcome__title">Bonjour, <em>{USER.prenom}</em></h1>
-          <p className="up-welcome__sub">
-            Découvrez des galeries d'art virtuelles en 3D — payez l'entrée et explorez à votre rythme.
-          </p>
+          <span className="up-welcome__greeting"><IC name="Sparkle" size={12} style={{ marginRight: 5 }} />Espace Visiteur</span>
+          <h1 className="up-welcome__title">Bonjour, <em>{getUserFirstName()}</em></h1>
+          <p className="up-welcome__sub">Découvrez des galeries d'art virtuelles en 3D — payez l'entrée et explorez à votre rythme.</p>
         </div>
         <div className="up-welcome__stats">
-          <div className="up-welcome__stat">
-            <span className="up-welcome__stat-val">{GALLERIES.length}</span>
-            <span className="up-welcome__stat-lbl">Galeries</span>
-          </div>
-          <div className="up-welcome__stat">
-            <span className="up-welcome__stat-val">{USER.galeriesVisitees}</span>
-            <span className="up-welcome__stat-lbl">Visitées</span>
-          </div>
-          <div className="up-welcome__stat">
-            <span className="up-welcome__stat-val">{favorites.length}</span>
-            <span className="up-welcome__stat-lbl">Favoris</span>
-          </div>
+          <div className="up-welcome__stat"><span className="up-welcome__stat-val">{galleries.length}</span><span className="up-welcome__stat-lbl">Galeries</span></div>
+          <div className="up-welcome__stat"><span className="up-welcome__stat-val">{purchasedCount}</span><span className="up-welcome__stat-lbl">Achetées</span></div>
+          <div className="up-welcome__stat"><span className="up-welcome__stat-val">{favorites.length}</span><span className="up-welcome__stat-lbl">Favoris</span></div>
         </div>
       </div>
 
-      {/* ── How-to Strip ── */}
       <div className="up-howto" style={{ margin: "40px 52px 0" }}>
         {HOW_TO_STEPS.map((s, i) => (
           <div key={i} className="up-howto__step">
             <span className="up-howto__num">0{i + 1}</span>
             <div className="up-howto__icon"><IC name={s.iconName} size={22} /></div>
-            <div>
-              <p className="up-howto__titre">{s.titre}</p>
-              <p className="up-howto__desc">{s.desc}</p>
-            </div>
+            <div><p className="up-howto__titre">{s.titre}</p><p className="up-howto__desc">{s.desc}</p></div>
           </div>
         ))}
       </div>
 
-      {/* ── FREE TRAILER ── */}
-      <TrailerSection onWatch={() => setShowTrailerModal(true)} />
+      <TrailerSection onWatch={handleWatchTrailer} />
 
-      {/* ── Galleries Header ── */}
       <div className="up-section-head">
         <div className="up-section-head__left">
           <span className="up-section-label">Nos Galeries</span>
@@ -964,12 +957,7 @@ export default function UserPage() {
         <div className="up-filters-right">
           <div className="up-search-wrap">
             <span className="up-search-icon"><IC name="Search" size={15} /></span>
-            <input
-              className="up-search"
-              placeholder="Galerie, artiste…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+            <input className="up-search" placeholder="Galerie, artiste…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <select className="up-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
             <option value="populaire">Plus populaires</option>
@@ -981,27 +969,16 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* Style Pills */}
       <div className="up-style-pills">
         {STYLES.map(s => (
-          <button
-            key={s}
-            className={`up-style-btn ${styleFilter === s ? "up-style-btn--active" : ""}`}
-            onClick={() => setStyleFilter(s)}
-          >
-            {s}
-          </button>
+          <button key={s} className={`up-style-btn ${styleFilter === s ? "up-style-btn--active" : ""}`} onClick={() => setStyleFilter(s)}>{s}</button>
         ))}
       </div>
 
-      {/* ── Gallery Grid ── */}
       <div className="up-grid-wrap">
         <div className="up-grid">
           {filtered.length === 0 ? (
-            <div className="up-empty">
-              <span className="up-empty__icon"><IC name="Palette" size={40} /></span>
-              <p className="up-empty__text">Aucune galerie trouvée.</p>
-            </div>
+            <div className="up-empty"><span className="up-empty__icon"><IC name="Palette" size={40} /></span><p className="up-empty__text">Aucune galerie trouvée.</p></div>
           ) : (
             filtered.map((g, idx) => (
               <div key={g.id} style={{ animationDelay: `${idx * 0.06}s` }}>
@@ -1010,6 +987,7 @@ export default function UserPage() {
                   onEnter={setSelectedGalerie}
                   isFavorite={favorites.includes(g.id)}
                   onToggleFavorite={toggleFavorite}
+                  hasAccess={userAccesses[g.id] || false}
                 />
               </div>
             ))
@@ -1017,16 +995,41 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* ── REVIEWS ── */}
-      <ReviewsSection />
-
+      <ReviewsSection 
+        userHasAccess={userHasAccess}
+        onAddReview={handleAddReview}
+        reviews={userReviews}
+      />
       <Footer />
 
-      {/* ── Modals ── */}
-      {showTrailerModal && <TrailerModal onClose={() => setShowTrailerModal(false)} />}
-      {selectedGalerie  && <EntryModal galerie={selectedGalerie} onClose={() => setSelectedGalerie(null)} />}
+      {showTrailerModal && (
+        <TrailerModal 
+          onClose={() => setShowTrailerModal(false)} 
+          onStartFreeTrailer={() => console.log("Visite gratuite démarrée")}
+        />
+      )}
+      {selectedGalerie && (
+        <EntryModal 
+          galerie={selectedGalerie} 
+          onClose={() => setSelectedGalerie(null)} 
+          hasExistingAccess={userAccesses[selectedGalerie.id] || false}
+          onOpenPaiement={handleOpenPaiement}
+        />
+      )}
 
-      {/* ── Scrollbar ── */}
+      {showPaiementModal && paymentItem && (
+        <PaiementModal
+          isOpen={showPaiementModal}
+          onClose={() => setShowPaiementModal(false)}
+          onSuccess={handlePaiementSuccess}
+          montant={paymentItem.montant}
+          description={paymentItem.description}
+          type={paymentItem.type}
+          itemId={paymentItem.itemId}
+          role={paymentItem.role}
+        />
+      )}
+
       <CustomScrollbar />
     </>
   );

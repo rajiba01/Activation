@@ -1,10 +1,61 @@
+// src/pages/artiste/MesOeuvres.jsx
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../../styles/Mesoeuvres.css";
 import { useArtisteStore } from "../../store/useArtisteStore";
 
-// ─── SVG Icons ──────────────────────────────────────────────────────────────
+// ========== ICÔNES (copiées de DashboardArtiste) ==========
 const Icons = {
+  museLogo: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z" fill="currentColor"/>
+    </svg>
+  ),
+  dashboardIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
+  artworksIcon: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 21V5C16 3.9 15.1 3 14 3H10C8.9 3 8 3.9 8 5V21" />
+    </svg>
+  ),
+  gallery: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 9L12 15L21 9L12 3L3 9Z" />
+      <path d="M5 12V18L12 22L19 18V12" />
+    </svg>
+  ),
+  commande: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 2L3 6V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V6L18 2H6Z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10C16 12.2 14.2 14 12 14C9.8 14 8 12.2 8 10" />
+    </svg>
+  ),
+  payment: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <line x1="2" y1="10" x2="22" y2="10" />
+      <circle cx="18" cy="16" r="1" fill="currentColor" />
+    </svg>
+  ),
+  ai: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 2L15.5 9.5L23 11L17 16.5L18.5 24L12 20L5.5 24L7 16.5L1 11L8.5 9.5L12 2Z" />
+    </svg>
+  ),
+  settings: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15C19.2 15.6 18.9 16.2 18.5 16.7L19.5 18.3L18.3 19.5L16.7 18.5C16.2 18.9 15.6 19.2 15 19.4L14.5 21H9.5L9 19.4C8.4 19.2 7.8 18.9 7.3 18.5L5.7 19.5L4.5 18.3L5.5 16.7C5.1 16.2 4.8 15.6 4.6 15L3 14.5V9.5L4.6 9C4.8 8.4 5.1 7.8 5.5 7.3L4.5 5.7L5.7 4.5L7.3 5.5C7.8 5.1 8.4 4.8 9 4.6L9.5 3H14.5L15 4.6C15.6 4.8 16.2 5.1 16.7 5.5L18.3 4.5L19.5 5.7L18.5 7.3C18.9 7.8 19.2 8.4 19.4 9L21 9.5V14.5L19.4 15Z" />
+    </svg>
+  ),
   Dashboard: () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="3" y="3" width="7" height="7" />
@@ -149,7 +200,18 @@ const Icons = {
   )
 };
 
-// ─── Données statiques ─────────────────────────────────────────────────────
+// ========== NAVIGATION ITEMS (comme Dashboard) ==========
+const navItems = [
+  { icon: "dashboardIcon", label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
+  { icon: "artworksIcon", label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
+  { icon: "gallery", label: "Mes Galeries", id: "chambre", path: "/mes-chambres" },
+  { icon: "commande", label: "Commandes", id: "commandes", path: "/commandes" },
+  { icon: "payment", label: "Mes Paiements", id: "paiements", path: "/mes-paiements" },
+  { icon: "ai", label: "Assistant IA", id: "ia", path: null },
+  { icon: "settings", label: "Paramètres", id: "settings", path: null },
+];
+
+// ========== DONNÉES STATIQUES ==========
 const ARTIST = {
   name: "Ariana Soghra",
   avatar: "https://i.pravatar.cc/80?img=47",
@@ -164,14 +226,57 @@ const TECHNIQUES = [
 
 const STATUTS = ["Tous", "Publié", "Brouillon", "Vendu"];
 
-const NAV_ITEMS = [
-  { icon: "dashboard", label: "Dashboard", id: "dashboard", path: "/dashboard-artiste" },
-  { icon: "oeuvres", label: "Mes Œuvres", id: "oeuvres", path: "/mes-oeuvres" },
-  { icon: "chambres", label: "Mes Chambres", id: "chambre", path: "/mes-chambres" },
-  { icon: "stats", label: "Statistiques", id: "stats", path: "/dashboard-artiste" },
-  { icon: "assistant", label: "Assistant IA", id: "ia", path: "/dashboard-artiste" },
-  { icon: "settings", label: "Paramètres", id: "settings", path: "/dashboard-artiste" },
-];
+// ... le reste du code (CustomScrollbar, OeuvreModal, etc.) ...
+
+// ========== SIDEBAR CORRIGÉE ==========
+function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isActive = (path) => {
+    if (!path) return false;
+    return location.pathname === path;
+  };
+
+  return (
+    <aside className="mo-sidebar">
+      <div className="sidebar-logo">
+        <span className="logo-mark"><Icons.museLogo /></span>
+        <span className="logo-text">ARTIVISION</span>
+      </div>
+
+      <div className="sidebar-artist">
+        <img src={ARTIST.avatar} alt={ARTIST.name} className="sidebar-avatar" />
+        <div>
+          <p className="sidebar-name">{ARTIST.name}</p>
+          <p className="sidebar-role">Artiste • {ARTIST.abonnement}</p>
+        </div>
+      </div>
+
+      <nav className="sidebar-nav">
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            className={`nav-item ${isActive(item.path) ? "nav-item--active" : ""}`}
+            onClick={() => item.path && navigate(item.path)}
+          >
+            <span className="nav-icon">{Icons[item.icon] && Icons[item.icon]()}</span>
+            <span className="nav-label">{item.label}</span>
+            {isActive(item.path) && <span className="nav-indicator" />}
+          </button>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-abonnement">
+          <span className="abonnement-badge">Actif</span>
+          <p className="abonnement-info">Abonnement actif</p>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 
 // ─── Custom Scrollbar ──────────────────────────────────────────────────────
 function CustomScrollbar() {
@@ -210,56 +315,6 @@ function CustomScrollbar() {
   return <div className="mo-csb-track"><div className="mo-csb-thumb" ref={thumbRef} onMouseDown={onMouseDown} /></div>;
 }
 
-// ─── Sidebar ────────────────────────────────────────────────────────────────
-function Sidebar() {
-  const navigate = useNavigate();
-  
-  const renderIcon = (iconName) => {
-    switch(iconName) {
-      case "dashboard": return <Icons.Dashboard />;
-      case "oeuvres": return <Icons.Oeuvres />;
-      case "chambres": return <Icons.Chambres />;
-      case "stats": return <Icons.Stats />;
-      case "assistant": return <Icons.AssistantIA />;
-      case "settings": return <Icons.Settings />;
-      default: return null;
-    }
-  };
-  
-  return (
-    <aside className="mo-sidebar">
-      <div className="mo-sidebar__logo">
-        <img src="/images/logo_artivision.png" alt="Artivision" className="mo-sidebar__logo-img"
-          onError={e => { e.target.style.display = "none"; }} />
-      </div>
-      <div className="mo-sidebar__artist">
-        <img src={ARTIST.avatar} alt={ARTIST.name} className="mo-sidebar__avatar"
-          onError={e => { e.target.src = "https://i.pravatar.cc/80?img=47"; }} />
-        <div>
-          <p className="mo-sidebar__name">{ARTIST.name}</p>
-          <p className="mo-sidebar__role">Artiste • {ARTIST.abonnement}</p>
-        </div>
-      </div>
-      <nav className="mo-sidebar__nav">
-        {NAV_ITEMS.map(item => (
-          <button
-            key={item.id}
-            className={`mo-nav-item ${item.id === "oeuvres" ? "mo-nav-item--active" : ""}`}
-            onClick={() => navigate(item.path)}
-          >
-            <span className="mo-nav-icon">{renderIcon(item.icon)}</span>
-            <span className="mo-nav-label">{item.label}</span>
-            {item.id === "oeuvres" && <span className="mo-nav-indicator" />}
-          </button>
-        ))}
-      </nav>
-      <div className="mo-sidebar__footer">
-        <span className="mo-badge">{ARTIST.abonnement}</span>
-        <p className="mo-sidebar__since">Depuis {ARTIST.depuis}</p>
-      </div>
-    </aside>
-  );
-}
 
 // ─── Add / Edit Modal ──────────────────────────────────────────────────────
 const EMPTY_FORM = {
@@ -275,9 +330,10 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
   const [errors, setErrors] = useState({});
   const [tagInput, setTagInput] = useState("");
   const [dragover, setDragover] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
   const fileRef = useRef(null);
 
-  const set = (key, val) => {
+  const setField = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: "" }));
   };
@@ -286,15 +342,21 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
     if (!file || !file.type.startsWith("image/")) return;
     const url = URL.createObjectURL(file);
     setForm(f => ({ ...f, img: file, imgPreview: url }));
+    setImageUrl("");
+  };
+
+  const handleImageUrl = (url) => {
+    setImageUrl(url);
+    setForm(f => ({ ...f, img: url, imgPreview: url }));
   };
 
   const addTag = () => {
     const t = tagInput.trim();
-    if (t && !form.tags.includes(t)) set("tags", [...form.tags, t]);
+    if (t && !form.tags.includes(t)) setField("tags", [...form.tags, t]);
     setTagInput("");
   };
 
-  const removeTag = (t) => set("tags", form.tags.filter(x => x !== t));
+  const removeTag = (t) => setField("tags", form.tags.filter(x => x !== t));
 
   const validate = () => {
     const e = {};
@@ -308,19 +370,37 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
     return Object.keys(e).length === 0;
   };
 
-  const handleSave = () => {
-    if (!validate()) return;
-    const galerie = galeries.find(g => g.id === form.galerieId);
-    onSave({
-      ...form,
-      id: isEdit ? oeuvre.id : undefined,
-      galerieName: galerie?.nom || "",
-      prix: parseFloat(form.prix),
-      nbExemplaires: parseInt(form.nbExemplaires) || 1,
-      img: form.imgPreview || oeuvre?.img || "",
-    });
+const handleSave = () => {
+  if (!validate()) return;
+  
+  const galerie = galeries.find(g => g.id === form.galerieId);
+  const saveData = {
+    id: isEdit ? oeuvre.id : undefined,
+    titre: form.titre,
+    description: form.description,
+    prix: parseFloat(form.prix),
+    technique: form.technique,
+    dimensions: form.dimensions || "",
+    dateRealisation: form.dateRealisation,
+    statut: form.statut,
+    nbExemplaires: parseInt(form.nbExemplaires) || 1,
+    galerieId: form.galerieId,
+    galerieName: galerie?.nom || "",
   };
-
+  
+  // ✅ Si c'est un fichier (upload)
+  if (form.img instanceof File) {
+    saveData.imgFile = form.img;
+    console.log("✅ Fichier détecté:", form.img.name, form.img.size);
+  } 
+  // Sinon si c'est une URL
+  else if (form.img && typeof form.img === 'string' && form.img.trim() !== '') {
+    saveData.img = form.img;
+    console.log("✅ URL détectée:", form.img);
+  }
+  
+  onSave(saveData);
+};
   return (
     <div className="mo-modal-backdrop" onClick={onClose}>
       <div className="mo-modal" onClick={e => e.stopPropagation()}>
@@ -333,7 +413,7 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
         </div>
 
         <div className="mo-modal__body">
-          {/* Image Upload */}
+          {/* Upload image zone */}
           <div
             className={`mo-upload-zone ${dragover ? "mo-upload-zone--dragover" : ""}`}
             onClick={() => fileRef.current?.click()}
@@ -357,7 +437,19 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
               </>
             )}
           </div>
-          {errors.img && <p className="mo-error" style={{ marginTop: -20, marginBottom: 16 }}>{errors.img}</p>}
+          
+          {/* Ou URL d'image */}
+          <div className="mo-field">
+            <label className="mo-label">Ou URL de l'image</label>
+            <input 
+              className="mo-input"
+              placeholder="https://..."
+              value={imageUrl}
+              onChange={e => handleImageUrl(e.target.value)}
+            />
+          </div>
+          
+          {errors.img && <p className="mo-error">{errors.img}</p>}
 
           {/* Section 1: Identification */}
           <div className="mo-section-sep">
@@ -369,9 +461,8 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
           <div className="mo-form-grid">
             <div className="mo-field">
               <label className="mo-label">Galerie de destination <span className="mo-required">*</span></label>
-              <p className="mo-hint">Dans quelle galerie exposer cette œuvre ?</p>
               <select className={`mo-select ${errors.galerieId ? "mo-input--error" : ""}`}
-                value={form.galerieId} onChange={e => set("galerieId", e.target.value)}>
+                value={form.galerieId} onChange={e => setField("galerieId", e.target.value)}>
                 <option value="">Choisir une galerie…</option>
                 {galeries.map(g => <option key={g.id} value={g.id}>{g.nom}</option>)}
               </select>
@@ -380,17 +471,16 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
 
             <div className="mo-field">
               <label className="mo-label">Titre de l'œuvre <span className="mo-required">*</span></label>
-              <p className="mo-hint">Le nom sous lequel l'œuvre sera exposée</p>
               <input className={`mo-input ${errors.titre ? "mo-input--error" : ""}`}
                 placeholder="Ex: Lumière d'Automne" value={form.titre}
-                onChange={e => set("titre", e.target.value)} />
+                onChange={e => setField("titre", e.target.value)} />
               {errors.titre && <p className="mo-error">{errors.titre}</p>}
             </div>
 
             <div className="mo-field">
               <label className="mo-label">Technique <span className="mo-required">*</span></label>
               <select className={`mo-select ${errors.technique ? "mo-input--error" : ""}`}
-                value={form.technique} onChange={e => set("technique", e.target.value)}>
+                value={form.technique} onChange={e => setField("technique", e.target.value)}>
                 <option value="">Choisir…</option>
                 {TECHNIQUES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -399,21 +489,20 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
 
             <div className="mo-field">
               <label className="mo-label">Dimensions</label>
-              <p className="mo-hint">Format : largeur × hauteur</p>
               <input className="mo-input" placeholder="Ex: 80 × 60 cm" value={form.dimensions}
-                onChange={e => set("dimensions", e.target.value)} />
+                onChange={e => setField("dimensions", e.target.value)} />
             </div>
 
             <div className="mo-field">
               <label className="mo-label">Date de réalisation <span className="mo-required">*</span></label>
               <input type="date" className={`mo-input ${errors.dateRealisation ? "mo-input--error" : ""}`}
-                value={form.dateRealisation} onChange={e => set("dateRealisation", e.target.value)} />
+                value={form.dateRealisation} onChange={e => setField("dateRealisation", e.target.value)} />
               {errors.dateRealisation && <p className="mo-error">{errors.dateRealisation}</p>}
             </div>
 
             <div className="mo-field">
               <label className="mo-label">Statut de publication</label>
-              <select className="mo-select" value={form.statut} onChange={e => set("statut", e.target.value)}>
+              <select className="mo-select" value={form.statut} onChange={e => setField("statut", e.target.value)}>
                 <option value="Publié">Publié — visible par les visiteurs</option>
                 <option value="Brouillon">Brouillon — masqué</option>
                 <option value="Vendu">Vendu — archivé</option>
@@ -430,28 +519,16 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
 
           <div className="mo-form-grid">
             <div className="mo-field mo-form-grid--full">
-              <label className="mo-label">Description de l'œuvre <span className="mo-required">*</span></label>
-              <p className="mo-hint">Racontez l'histoire, l'inspiration et l'émotion de cette création</p>
+              <label className="mo-label">Description de l'œuvre</label>
               <textarea className="mo-textarea" rows={4}
-                placeholder="Décrivez votre œuvre : inspiration, technique, histoire derrière la création…"
-                value={form.description} onChange={e => set("description", e.target.value)}
+                placeholder="Décrivez votre œuvre..."
+                value={form.description} onChange={e => setField("description", e.target.value)}
                 maxLength={800} />
               <div className="mo-char-count">{form.description.length} / 800</div>
             </div>
 
             <div className="mo-field mo-form-grid--full">
-              <label className="mo-label">Informations complémentaires</label>
-              <p className="mo-hint">Provenance, expositions précédentes, certificat d'authenticité, anecdotes…</p>
-              <textarea className="mo-textarea" rows={3}
-                placeholder="Toute information supplémentaire utile pour les acheteurs potentiels…"
-                value={form.informationsComplementaires}
-                onChange={e => set("informationsComplementaires", e.target.value)}
-                maxLength={500} />
-            </div>
-
-            <div className="mo-field mo-form-grid--full">
               <label className="mo-label">Mots-clés / Tags</label>
-              <p className="mo-hint">Aidez les visiteurs à trouver votre œuvre</p>
               <div className="mo-tag-input-row">
                 <input className="mo-input" style={{ flex: 1 }} placeholder="Ex: Impressionnisme"
                   value={tagInput} onChange={e => setTagInput(e.target.value)}
@@ -481,20 +558,18 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
           <div className="mo-form-grid">
             <div className="mo-field">
               <label className="mo-label">Prix de vente (DT) <span className="mo-required">*</span></label>
-              <p className="mo-hint">Prix affiché aux visiteurs</p>
               <input type="number" min="0" step="0.5"
                 className={`mo-input ${errors.prix ? "mo-input--error" : ""}`}
                 placeholder="Ex: 450" value={form.prix}
-                onChange={e => set("prix", e.target.value)} />
+                onChange={e => setField("prix", e.target.value)} />
               {errors.prix && <p className="mo-error">{errors.prix}</p>}
             </div>
 
             <div className="mo-field">
               <label className="mo-label">Nombre d'exemplaires</label>
-              <p className="mo-hint">1 pour une œuvre unique</p>
               <input type="number" min="1" className="mo-input"
                 placeholder="Ex: 1" value={form.nbExemplaires}
-                onChange={e => set("nbExemplaires", e.target.value)} />
+                onChange={e => setField("nbExemplaires", e.target.value)} />
             </div>
           </div>
         </div>
@@ -514,12 +589,13 @@ function OeuvreModal({ oeuvre, onClose, onSave, galeries }) {
 export default function MesOeuvres() {
   const navigate = useNavigate();
   
-  // ✅ Récupérer depuis le store au lieu de l'état local
   const oeuvres = useArtisteStore((state) => state.oeuvres);
+  const chambres = useArtisteStore((state) => state.chambres);
+  const loadOeuvres = useArtisteStore((state) => state.loadOeuvres);
+  const loadChambres = useArtisteStore((state) => state.loadChambres);
   const ajouterOeuvre = useArtisteStore((state) => state.ajouterOeuvre);
   const modifierOeuvre = useArtisteStore((state) => state.modifierOeuvre);
   const supprimerOeuvre = useArtisteStore((state) => state.supprimerOeuvre);
-  const chambres = useArtisteStore((state) => state.chambres);
 
   const [search, setSearch] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("Tous");
@@ -530,39 +606,104 @@ export default function MesOeuvres() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [toast, setToast] = useState({ msg: "", show: false });
 
+  useEffect(() => {
+    loadChambres();
+    loadOeuvres();
+  }, []);
+
   const showToast = (msg) => {
     setToast({ msg, show: true });
     setTimeout(() => setToast(t => ({ ...t, show: false })), 2800);
   };
 
-  // ✅ Utiliser les actions du store
-  const handleSave = (data) => {
+const handleSave = async (data) => {
+  console.log("📥 Données reçues:", data);
+  
+  // ✅ Si c'est un fichier (upload), utiliser FormData
+  if (data.imgFile && data.imgFile instanceof File) {
+    const formData = new FormData();
+    formData.append('titre', data.titre);
+    formData.append('description', data.description);
+    formData.append('prix', parseFloat(data.prix));
+    formData.append('technique', data.technique);
+    formData.append('dimensions', data.dimensions || "");
+    formData.append('date_realisation', data.dateRealisation);
+    formData.append('statut', data.statut);
+    formData.append('nb_exemplaires', parseInt(data.nbExemplaires) || 1);
+    formData.append('galerie', parseInt(data.galerieId));
+    formData.append('img', data.imgFile);  // ← Le fichier
+    
+    console.log("📤 Upload de fichier:", data.imgFile.name);
+    
+    try {
+      if (editOeuvre) {
+        await modifierOeuvre(editOeuvre.id, formData);
+        showToast("✓ Œuvre mise à jour avec image");
+      } else {
+        await ajouterOeuvre(formData);
+        showToast("✓ Œuvre ajoutée avec image");
+      }
+      setShowModal(false);
+      setEditOeuvre(null);
+      await loadOeuvres();
+      await loadChambres();
+    } catch (error) {
+      console.error("❌ Erreur:", error.response?.data);
+      showToast("Erreur: " + JSON.stringify(error.response?.data));
+    }
+    return;
+  }
+  
+  // ✅ Sinon, envoyer en JSON (pas d'image ou URL)
+  const payload = {
+    titre: data.titre,
+    description: data.description,
+    prix: parseFloat(data.prix),
+    technique: data.technique,
+    dimensions: data.dimensions || "",
+    date_realisation: data.dateRealisation,
+    statut: data.statut,
+    nb_exemplaires: parseInt(data.nbExemplaires) || 1,
+    galerie: parseInt(data.galerieId),
+  };
+  
+  if (data.img && typeof data.img === 'string' && data.img.trim() !== '') {
+    payload.img = data.img;
+  }
+  
+  console.log("📤 Payload JSON:", payload);
+  
+  try {
     if (editOeuvre) {
-      modifierOeuvre(data.id, data);
-      showToast("✓ Œuvre mise à jour avec succès");
+      await modifierOeuvre(editOeuvre.id, payload);
+      showToast("✓ Œuvre mise à jour");
     } else {
-      ajouterOeuvre(data);
-      showToast("✓ Œuvre ajoutée à votre galerie");
+      await ajouterOeuvre(payload);
+      showToast("✓ Œuvre ajoutée");
     }
     setShowModal(false);
     setEditOeuvre(null);
-  };
+    await loadOeuvres();
+    await loadChambres();
+  } catch (error) {
+    console.error("❌ Erreur:", error.response?.data);
+    showToast("Erreur: " + JSON.stringify(error.response?.data));
+  }
+};
 
-  // ✅ Utiliser l'action du store
-  const handleDelete = (id) => {
-    supprimerOeuvre(id);
+  const handleDelete = async (id) => {
+    await supprimerOeuvre(id);
     setDeleteTarget(null);
     showToast("✓ Œuvre supprimée");
+    await loadOeuvres();
   };
 
   const openAdd = () => { setEditOeuvre(null); setShowModal(true); };
   const openEdit = (o) => { setEditOeuvre(o); setShowModal(true); };
 
-  // ✅ Les galeries viennent du store
   const galeries = chambres.map(c => ({ id: c.id, nom: c.nom }));
   const galerieOptions = ["Tous", ...galeries.map(g => g.nom)];
 
-  // Filtrer les œuvres
   const filtered = oeuvres
     .filter(o => filtreStatut === "Tous" || o.statut === filtreStatut)
     .filter(o => filtreGalerie === "Tous" || o.galerieName === filtreGalerie)
@@ -590,7 +731,6 @@ export default function MesOeuvres() {
     <div className="mo-root">
       <Sidebar />
       <main className="mo-main">
-        {/* Header */}
         <div className="mo-header">
           <div>
             <span className="mo-header__eyebrow">✦ Espace Artiste</span>
@@ -604,7 +744,6 @@ export default function MesOeuvres() {
           </div>
         </div>
 
-        {/* KPIs */}
         <div className="mo-kpis">
           {kpis.map((k, i) => (
             <div key={i} className="mo-kpi">
@@ -615,7 +754,6 @@ export default function MesOeuvres() {
           ))}
         </div>
 
-        {/* Toolbar */}
         <div className="mo-toolbar">
           <div className="mo-toolbar__left">
             <div className="mo-search-wrap">
@@ -640,7 +778,6 @@ export default function MesOeuvres() {
           </div>
         </div>
 
-        {/* Grid */}
         <div className={`mo-grid ${view === "list" ? "mo-grid--list" : ""}`}>
           {filtered.length === 0 ? (
             <div className="mo-empty">
@@ -661,9 +798,13 @@ export default function MesOeuvres() {
                     onClick={() => setDeleteTarget(o)} title="Supprimer"><Icons.Trash /></button>
                 </div>
                 <div className="mo-card__img-wrap">
-                  <img src={o.img} alt={o.titre} className="mo-card__img"
-                    onError={e => { e.target.src = `https://picsum.photos/400/280?random=${idx + 1}`; }} />
-                  <div className="mo-card__galerie-tag">{o.galerieName}</div>
+                  <img 
+                    src={o.img || "https://picsum.photos/400/280?random=1"} 
+                    alt={o.titre} 
+                    className="mo-card__img"
+                    onError={e => { e.target.src = `https://picsum.photos/400/280?random=${idx + 1}`; }} 
+                  />
+                  <div className="mo-card__galerie-tag">{o.galerieName || `Galerie ${o.galerie}`}</div>
                 </div>
                 <div className="mo-card__body">
                   <span className="mo-card__galerie-name">{o.technique}</span>
@@ -671,8 +812,8 @@ export default function MesOeuvres() {
                   <p className="mo-card__desc">{o.description}</p>
                   <div className="mo-card__meta">
                     {o.dimensions && <span className="mo-card__meta-item"><Icons.Ruler /> {o.dimensions}</span>}
-                    <span className="mo-card__meta-item"><Icons.Package /> {o.nbExemplaires} ex.</span>
-                    <span className="mo-card__meta-item"><Icons.Calendar /> {new Date(o.dateRealisation).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" })}</span>
+                    <span className="mo-card__meta-item"><Icons.Package /> {o.nb_exemplaires || o.nbExemplaires} ex.</span>
+                    <span className="mo-card__meta-item"><Icons.Calendar /> {new Date(o.date_realisation || o.dateRealisation).toLocaleDateString("fr-FR", { day:"2-digit", month:"short", year:"numeric" })}</span>
                   </div>
                 </div>
                 <div className="mo-card__footer">
@@ -685,7 +826,6 @@ export default function MesOeuvres() {
         </div>
       </main>
 
-      {/* Modals */}
       {showModal && (
         <OeuvreModal
           oeuvre={editOeuvre}
@@ -701,8 +841,7 @@ export default function MesOeuvres() {
             <span className="mo-confirm__icon"><Icons.Warning /></span>
             <h2 className="mo-confirm__title">Supprimer cette œuvre ?</h2>
             <p className="mo-confirm__sub">
-              <strong>"{deleteTarget.titre}"</strong> sera supprimée définitivement de votre galerie.
-              Cette action est irréversible.
+              <strong>"{deleteTarget.titre}"</strong> sera supprimée définitivement.
             </p>
             <div className="mo-confirm__actions">
               <button className="mo-btn mo-btn--ghost" onClick={() => setDeleteTarget(null)}>Annuler</button>

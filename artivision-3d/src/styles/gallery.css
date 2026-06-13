@@ -1,0 +1,115 @@
+/* src/styles/gallery.css - Styles pour l'interface */
+.gallery-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Overlay d'information */
+.artwork-info-panel {
+  position: fixed;
+  bottom: 100px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px 24px;
+  max-width: 300px;
+  border-left: 4px solid #C9A040;
+  animation: slideIn 0.3s ease-out;
+  z-index: 100;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.artwork-info-panel h3 {
+  margin: 0 0 8px 0;
+  color: #C9A040;
+  font-family: 'Georgia', serif;
+}
+
+.artwork-info-panel p {
+  margin: 4px 0;
+  color: #ddd;
+  font-size: 14px;
+}
+
+.artwork-info-panel .price {
+  color: #C9A040;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+/* Instructions overlay */
+.instructions-overlay {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #C9A040;
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 99;
+  transition: opacity 0.5s;
+  white-space: nowrap;
+}
+
+.instructions-overlay.hide {
+  opacity: 0;
+}
+
+/* Bouton toggle galerie */
+.gallery-toggle-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid #C9A040;
+  color: #C9A040;
+  padding: 10px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 100;
+  transition: all 0.3s;
+}
+
+.gallery-toggle-btn:hover {
+  background: #C9A040;
+  color: #1a1a1a;
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .artwork-info-panel {
+    bottom: 80px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    padding: 12px 16px;
+  }
+  
+  .instructions-overlay {
+    font-size: 10px;
+    white-space: nowrap;
+  }
+}
