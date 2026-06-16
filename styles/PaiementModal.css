@@ -1,0 +1,281 @@
+/* styles/PaiementModal.css */
+.pm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.pm-modal {
+  background: linear-gradient(145deg, #1A1A2E 0%, #16213E 100%);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(201, 160, 64, 0.3);
+  overflow: hidden;
+}
+
+.pm-header {
+  padding: 24px 24px 16px;
+  text-align: center;
+  position: relative;
+  border-bottom: 1px solid rgba(201, 160, 64, 0.2);
+}
+
+.pm-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.pm-close:hover {
+  color: #C9A040;
+}
+
+.pm-logo {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.pm-header h2 {
+  color: #F5ECD7;
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.pm-subtitle {
+  color: rgba(245, 236, 215, 0.6);
+  font-size: 13px;
+  margin: 0;
+}
+
+.pm-body {
+  padding: 20px 24px;
+}
+
+.pm-amount {
+  background: rgba(201, 160, 64, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 24px;
+  border: 1px solid rgba(201, 160, 64, 0.2);
+}
+
+.pm-amount span {
+  display: block;
+  color: rgba(245, 236, 215, 0.6);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.pm-amount strong {
+  color: #C9A040;
+  font-size: 28px;
+}
+
+.pm-card-type {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(245, 236, 215, 0.5);
+  margin-bottom: 20px;
+}
+
+.pm-field {
+  margin-bottom: 18px;
+}
+
+.pm-field label {
+  display: block;
+  color: #F5ECD7;
+  font-size: 12px;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.pm-field input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(201, 160, 64, 0.3);
+  border-radius: 10px;
+  color: #F5ECD7;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.pm-field input:focus {
+  outline: none;
+  border-color: #C9A040;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.pm-field input.error {
+  border-color: #E24B4A;
+}
+
+.pm-error {
+  display: block;
+  color: #E24B4A;
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+.pm-row {
+  display: flex;
+  gap: 16px;
+}
+
+.pm-field--half {
+  flex: 1;
+}
+
+.pm-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 12px;
+  color: rgba(245, 236, 215, 0.5);
+}
+
+.pm-error-global {
+  background: rgba(226, 75, 74, 0.15);
+  border: 1px solid #E24B4A;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  color: #E24B4A;
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.pm-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+  border-top: 1px solid rgba(201, 160, 64, 0.2);
+}
+
+.pm-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pm-btn--cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(245, 236, 215, 0.7);
+}
+
+.pm-btn--cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.pm-btn--pay {
+  background: linear-gradient(135deg, #C9A040, #B8922A);
+  color: #1A0C10;
+}
+
+.pm-btn--pay:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 160, 64, 0.4);
+}
+
+.pm-btn--pay:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.pm-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #1A0C10;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Succès */
+.pm-success {
+  text-align: center;
+  padding: 48px 32px;
+}
+
+.pm-success-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #3A6B35, #2C5A28);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 36px;
+  color: white;
+}
+
+.pm-success h2 {
+  color: #F5ECD7;
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.pm-success p {
+  color: rgba(245, 236, 215, 0.6);
+  margin-bottom: 24px;
+}
+
+.pm-success-details {
+  background: rgba(201, 160, 64, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 28px;
+  border: 1px solid rgba(201, 160, 64, 0.2);
+}
+
+.pm-success-details div {
+  color: rgba(245, 236, 215, 0.7);
+  margin-bottom: 6px;
+}
+
+.pm-success-details strong {
+  color: #C9A040;
+}
+
+.pm-btn--success {
+  background: linear-gradient(135deg, #3A6B35, #2C5A28);
+  color: white;
+  width: auto;
+  padding: 14px 40px;
+  margin: 0 auto;
+  display: inline-block;
+}
